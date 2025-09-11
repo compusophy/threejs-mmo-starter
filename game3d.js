@@ -53,9 +53,9 @@ class Game3D {
             1000
         );
 
-        // Isometric camera position centered on player
-        this.camera.position.set(15, 25, 15);
-        this.camera.lookAt(0, 0.675, 0); // Look at player position
+        // TOP-DOWN CAMERA: Shows square world instead of diamond
+        this.camera.position.set(0, 50, 0); // Directly above center
+        this.camera.lookAt(0, 0, 0); // Looking down at origin
 
         // Renderer setup
         this.renderer = new THREE.WebGLRenderer({
@@ -115,7 +115,7 @@ class Game3D {
         });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.5; // Move ground down to avoid interference
+        ground.position.y = 0; // Ground at Y=0 for top-down view
         ground.receiveShadow = true;
         ground.userData = { isGround: true, type: 'ground' };
         this.scene.add(ground);
@@ -144,8 +144,8 @@ class Game3D {
         for (let i = 0; i <= gridDivisions; i++) {
             // Horizontal lines
             const hGeometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(-gridSize/2, -0.49, -gridSize/2 + i * gridStep),
-                new THREE.Vector3(gridSize/2, -0.49, -gridSize/2 + i * gridStep)
+                new THREE.Vector3(-gridSize/2, 0.01, -gridSize/2 + i * gridStep),
+                new THREE.Vector3(gridSize/2, 0.01, -gridSize/2 + i * gridStep)
             ]);
             const hMaterial = new THREE.LineBasicMaterial({ color: 0x654321, opacity: 0.05, transparent: true });
             const hLine = new THREE.Line(hGeometry, hMaterial);
@@ -153,8 +153,8 @@ class Game3D {
 
             // Vertical lines
             const vGeometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(-gridSize/2 + i * gridStep, -0.49, -gridSize/2),
-                new THREE.Vector3(-gridSize/2 + i * gridStep, -0.49, gridSize/2)
+                new THREE.Vector3(-gridSize/2 + i * gridStep, 0.01, -gridSize/2),
+                new THREE.Vector3(-gridSize/2 + i * gridStep, 0.01, gridSize/2)
             ]);
             const vMaterial = new THREE.LineBasicMaterial({ color: 0x654321, opacity: 0.05, transparent: true });
             const vLine = new THREE.Line(vGeometry, vMaterial);
@@ -167,7 +167,7 @@ class Game3D {
         const castleGeometry = new THREE.BoxGeometry(8, 12, 8);
         const castleMaterial = new THREE.MeshLambertMaterial({ color: 0x696969 });
         const castle = new THREE.Mesh(castleGeometry, castleMaterial);
-        castle.position.set(0, 5.5, -20);
+        castle.position.set(0, 6, -20);
         castle.castShadow = true;
         castle.userData = { type: 'building', buildingType: 'castle', name: 'Lumbridge Castle' };
         this.scene.add(castle);
@@ -223,7 +223,7 @@ class Game3D {
         });
         const water = new THREE.Mesh(waterGeometry, waterMaterial);
         water.rotation.x = -Math.PI / 2;
-        water.position.set(30, -0.4, 0);
+        water.position.set(30, 0.1, 0);
         water.userData = { type: 'water', name: 'River' };
         this.scene.add(water);
     }
@@ -237,7 +237,7 @@ class Game3D {
         // North wall (positive Z)
         const northWallGeometry = new THREE.BoxGeometry(worldSize + wallThickness * 2, wallHeight, wallThickness);
         const northWall = new THREE.Mesh(northWallGeometry, wallMaterial);
-        northWall.position.set(0, wallHeight / 2 - 0.5, worldSize / 2 + wallThickness / 2);
+        northWall.position.set(0, wallHeight / 2, worldSize / 2 + wallThickness / 2);
         northWall.castShadow = true;
         northWall.receiveShadow = true;
         northWall.userData = { type: 'wall', boundary: 'north' };
@@ -246,7 +246,7 @@ class Game3D {
         // South wall (negative Z)
         const southWallGeometry = new THREE.BoxGeometry(worldSize + wallThickness * 2, wallHeight, wallThickness);
         const southWall = new THREE.Mesh(southWallGeometry, wallMaterial);
-        southWall.position.set(0, wallHeight / 2 - 0.5, -worldSize / 2 - wallThickness / 2);
+        southWall.position.set(0, wallHeight / 2, -worldSize / 2 - wallThickness / 2);
         southWall.castShadow = true;
         southWall.receiveShadow = true;
         southWall.userData = { type: 'wall', boundary: 'south' };
@@ -255,7 +255,7 @@ class Game3D {
         // East wall (positive X)
         const eastWallGeometry = new THREE.BoxGeometry(wallThickness, wallHeight, worldSize);
         const eastWall = new THREE.Mesh(eastWallGeometry, wallMaterial);
-        eastWall.position.set(worldSize / 2 + wallThickness / 2, wallHeight / 2 - 0.5, 0);
+        eastWall.position.set(worldSize / 2 + wallThickness / 2, wallHeight / 2, 0);
         eastWall.castShadow = true;
         eastWall.receiveShadow = true;
         eastWall.userData = { type: 'wall', boundary: 'east' };
@@ -264,7 +264,7 @@ class Game3D {
         // West wall (negative X)
         const westWallGeometry = new THREE.BoxGeometry(wallThickness, wallHeight, worldSize);
         const westWall = new THREE.Mesh(westWallGeometry, wallMaterial);
-        westWall.position.set(-worldSize / 2 - wallThickness / 2, wallHeight / 2 - 0.5, 0);
+        westWall.position.set(-worldSize / 2 - wallThickness / 2, wallHeight / 2, 0);
         westWall.castShadow = true;
         westWall.receiveShadow = true;
         westWall.userData = { type: 'wall', boundary: 'west' };
@@ -533,12 +533,12 @@ class Game3D {
 
         // Use plane intersection for reliable click-to-move positioning
         const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Y=0 plane
-        const planeIntersect = new THREE.Vector3();
-        this.raycaster.ray.intersectPlane(plane, planeIntersect);
+            const planeIntersect = new THREE.Vector3();
+            this.raycaster.ray.intersectPlane(plane, planeIntersect);
 
         let intersects = [];
-        if (planeIntersect && !isNaN(planeIntersect.x) && !isNaN(planeIntersect.y) && !isNaN(planeIntersect.z)) {
-            intersects = [{ point: planeIntersect }];
+            if (planeIntersect && !isNaN(planeIntersect.x) && !isNaN(planeIntersect.y) && !isNaN(planeIntersect.z)) {
+                intersects = [{ point: planeIntersect }];
             console.log('Click position:', planeIntersect.x, planeIntersect.z);
         }
 
@@ -648,7 +648,7 @@ class Game3D {
 
         this.destinationMarker = new THREE.Mesh(markerGeometry, markerMaterial);
         this.destinationMarker.position.copy(position);
-        this.destinationMarker.position.y = 0.01; // On ground level where clicked
+        this.destinationMarker.position.y = 0.01; // Just above ground level
         this.destinationMarker.rotation.x = -Math.PI / 2; // Lay flat on ground
 
         // Add pulsing animation
@@ -918,26 +918,24 @@ class Game3D {
     }
 
     updateCamera() {
-        // CORRECTED ISOMETRIC CAMERA: Proper orientation with crosshair at feet
-        const cameraDistance = 35;
-        const cameraHeight = 45;
+        // TOP-DOWN CAMERA: Follow player from above
+        const cameraHeight = 50;
 
-        // Calculate ideal camera position for proper orientation
-        // Position camera relative to player for consistent view
+        // Position camera directly above player
         const idealPosition = new THREE.Vector3(
-            this.player.position.x + 15,               // Offset from player X
-            this.player.position.y + 25,               // Above player
-            this.player.position.z + 15                // Offset from player Z
+            this.player.position.x,      // Same X as player
+            cameraHeight,                // Fixed height above
+            this.player.position.z       // Same Z as player
         );
 
-        // SUPER SMOOTH camera following with optimized lerp
-        const lerpFactor = this.isMoving ? 0.12 : 0.08; // Faster when moving, smoother when stopped
+        // Smooth camera following
+        const lerpFactor = this.isMoving ? 0.15 : 0.1;
         this.camera.position.lerp(idealPosition, lerpFactor);
 
-        // Calculate look-at target at player's feet level (above ground)
+        // Look down at player position
         const lookAtTarget = new THREE.Vector3(
             this.player.position.x,     // Look at player's X
-            this.player.position.y - 1.0, // Look at level below player (near ground)
+            0,                         // Look at ground level
             this.player.position.z      // Look at player's Z
         );
 
@@ -969,17 +967,17 @@ class Game3D {
     updateMinimap() {
         const player = document.getElementById('minimap-player');
         if (player) {
-            // UPDATED MINIMAP: Represents full 200x200 world (150px minimap represents 200 world units)
+            // FULL WORLD MINIMAP: Shows entire 200x200 world
             const scale = 150 / 200; // 150 pixels represents 200 world units
 
-            // X coordinate (east-west) maps to left-right on minimap
+            // DIRECT MAPPING: Game X → Minimap X, Game Z → Minimap Y
+            // Move RIGHT in game → move RIGHT on minimap
+            // Move DOWN in game → move DOWN on minimap
+            // Move LEFT in game → move LEFT on minimap
             const minimapX = (this.player.position.x * scale) + 75;
-
-            // Z coordinate (north-south) maps to top-bottom on minimap
-            // Positive Z (north) = top of minimap, Negative Z (south) = bottom of minimap
             const minimapY = (this.player.position.z * scale) + 75;
 
-            // Position player dot on minimap (clamped to minimap bounds)
+            // Position player dot on minimap (clamped to bounds)
             player.style.left = `${Math.max(0, Math.min(142, minimapX))}px`;
             player.style.top = `${Math.max(0, Math.min(142, minimapY))}px`;
         }
@@ -1009,7 +1007,10 @@ class Game3D {
         const minimapContainer = document.querySelector('.minimap-content');
         if (!minimapContainer) return;
 
-        const scale = 150 / 200; // Same scale as player positioning
+        // FULL WORLD MINIMAP: Same scale as player
+        const scale = 150 / 200; // 150 pixels represents 200 world units
+
+        // Apply same direct mapping as player coordinates
         const minimapX = (worldPosition.x * scale) + 75;
         const minimapY = (worldPosition.z * scale) + 75;
 

@@ -702,15 +702,15 @@
     transition: width 0.3s ease;
 }
 
-/* Minimap */
+/* Minimap - Square container for square world */
 #minimap {
     position: fixed;
-    top: 0;
-    right: 0;
+    top: 10px;
+    right: 10px;
     width: 150px;
     height: 150px;
     background: rgba(0, 0, 0, 0.7);
-    border-radius: 0;
+    border: 1px solid #666;
     z-index: 150;
     overflow: hidden;
 }
