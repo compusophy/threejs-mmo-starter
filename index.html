@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Simple Runescape - Single Player - v1.9.2 - Clean Interface</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js@1.9.10"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js?v=1.9.2"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 3D Game Canvas -->
+    <div id="game-3d-container">
+        <canvas id="game-canvas"></canvas>
+
+    <!-- Removed version indicator - clean interface -->
+    </div>
+
+    <!-- 2D UI Overlay (initially hidden) -->
+    <div id="ui-overlay" style="display: none;">
+        <div class="game-container">
+        <header class="game-header">
+            <h1>Simple Runescape</h1>
+            <div class="player-info">
+                <span id="player-name">Player</span>
+                <span id="player-level">Level: 1</span>
+                <span id="player-health">HP: 100/100</span>
+            </div>
+        </header>
+
+        <div class="game-main">
+            <div class="sidebar">
+                <div class="stats-panel">
+                    <h3>Stats</h3>
+                    <div class="stat">
+                        <span>Attack:</span>
+                        <span id="attack-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="attack-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Defense:</span>
+                        <span id="defense-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="defense-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Strength:</span>
+                        <span id="strength-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="strength-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Mining:</span>
+                        <span id="mining-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="mining-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Smithing:</span>
+                        <span id="smithing-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="smithing-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Cooking:</span>
+                        <span id="cooking-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="cooking-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Fishing:</span>
+                        <span id="fishing-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="fishing-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Woodcutting:</span>
+                        <span id="woodcutting-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="woodcutting-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Firemaking:</span>
+                        <span id="firemaking-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="firemaking-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Prayer:</span>
+                        <span id="prayer-level">1</span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="prayer-exp" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inventory-panel">
+                    <h3>Inventory</h3>
+                    <div class="inventory-grid" id="inventory">
+                        <!-- Inventory slots will be populated here -->
+                    </div>
+                </div>
+
+                <div class="quests-panel">
+                    <h3>Quests</h3>
+                    <div id="quests-list">
+                        <!-- Quest list will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="location-info">
+                    <h2 id="current-location">Lumbridge</h2>
+                    <p id="location-description">You are in the peaceful town of Lumbridge. There are chickens nearby and a few goblins in the wilderness.</p>
+                </div>
+
+                <div class="actions-panel">
+                    <h3>Actions</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="fightChicken()">Fight Chicken</button>
+                        <button class="action-btn" onclick="fightGoblin()">Fight Goblin</button>
+                        <button class="action-btn" onclick="exploreForEnemies()">Explore for Enemies</button>
+                        <button class="action-btn" onclick="exploreWilderness()">Explore Wilderness</button>
+                        <button class="action-btn" onclick="goToMiningSite()">Go to Mining Site</button>
+                        <button class="action-btn" onclick="goToLumbridge()">Return to Lumbridge</button>
+                        <button class="action-btn" onclick="mineRocks()">Mine Rocks</button>
+                        <button class="action-btn" onclick="goToFurnace()">Go to Furnace</button>
+                        <button class="action-btn" onclick="goToCookingRange()">Go to Cooking Range</button>
+                        <button class="action-btn" onclick="smithBar('bronze_bar')">Smith Bronze Bar</button>
+                        <button class="action-btn" onclick="smithBar('iron_bar')">Smith Iron Bar</button>
+                        <button class="action-btn" onclick="cookFood('cooked_chicken')">Cook Chicken</button>
+                        <button class="action-btn" onclick="cookFood('cooked_fish_item')">Cook Fish</button>
+                        <button class="action-btn" onclick="cookFood('cooked_trout')">Cook Trout</button>
+                        <button class="action-btn" onclick="cookFood('cooked_salmon')">Cook Salmon</button>
+                        <button class="action-btn" onclick="rest()">Rest</button>
+                        <button class="action-btn" onclick="goToRiver()">Go to River</button>
+                        <button class="action-btn" onclick="goToForest()">Go to Forest</button>
+                        <button class="action-btn" onclick="goToShop()">Go to Shop</button>
+                        <button class="action-btn" onclick="goToBank()">Go to Bank</button>
+                        <button class="action-btn" onclick="goToCampfireArea()">Go to Campfire Area</button>
+                        <button class="action-btn" onclick="goFishing()">Go Fishing</button>
+                        <button class="action-btn" onclick="chopTrees()">Chop Trees</button>
+                        <button class="action-btn" onclick="burnLog('logs')">Burn Logs</button>
+                        <button class="action-btn" onclick="burnLog('oak_logs')">Burn Oak Logs</button>
+                        <button class="action-btn" onclick="burnLog('willow_logs')">Burn Willow Logs</button>
+                        <button class="action-btn" onclick="buryBones('bones')">Bury Bones</button>
+                        <button class="action-btn" onclick="buryBones('skeleton_bones')">Bury Skeleton Bones</button>
+                        <button class="action-btn" onclick="buryBones('bear_bones')">Bury Bear Bones</button>
+                        <button class="action-btn" onclick="goToVarrock()">Go to Varrock</button>
+                        <button class="action-btn" onclick="goToDraynorVillage()">Go to Draynor Village</button>
+                        <button class="action-btn" onclick="goToEdgeville()">Go to Edgeville</button>
+                        <button class="action-btn" onclick="goToAlKharid()">Go to Al Kharid</button>
+                        <button class="action-btn" onclick="saveGame()">Save Game</button>
+                        <button class="action-btn" onclick="loadGame()">Load Game</button>
+                        <button class="action-btn" onclick="startQuest('chicken_hunter')">Start Chicken Hunter Quest</button>
+                        <button class="action-btn" onclick="startQuest('cooks_assistant')">Start Cook's Assistant Quest</button>
+                        <button class="action-btn" onclick="startQuest('dorics_quest')">Start Doric's Quest</button>
+                        <button class="action-btn" onclick="startQuest('wilderness_warrior')">Start Wilderness Warrior Quest</button>
+                        <button class="action-btn" onclick="startQuest('master_survivor')">Start Master Survivor Quest</button>
+                    </div>
+                </div>
+
+                <div class="combat-log">
+                    <h3>Combat Log</h3>
+                    <div id="log-messages">
+                        <p>Welcome to Simple Runescape! Choose an action to begin.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Combat Modal -->
+    <div id="combat-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="combat-title">Combat</h3>
+            <div class="combat-info">
+                <div class="enemy-info">
+                    <h4 id="enemy-name">Enemy</h4>
+                    <p id="enemy-health">HP: 50/50</p>
+                </div>
+                <div class="combat-actions">
+                    <button class="combat-btn" onclick="attack()">Attack</button>
+                    <button class="combat-btn" onclick="defend()">Defend</button>
+                    <button class="combat-btn" onclick="flee()">Flee</button>
+                    <div class="ability-actions">
+                        <button class="combat-btn ability-btn" onclick="usePowerStrike()">Power Strike</button>
+                        <button class="combat-btn ability-btn" onclick="useDefensiveStance()">Defend</button>
+                        <button class="combat-btn ability-btn" onclick="useHealingPrayer()">Heal Prayer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div> <!-- End ui-overlay -->
+
+    <script src="game3d.js?v=1.9.2&t=20241220_17"></script>
+
+    <script>
+        // Test script to verify current state
+        console.log('🌟 PAGE LOADED AT:', new Date().toISOString());
+        console.log('🌟 Three.js available:', typeof THREE !== 'undefined');
+        if (typeof THREE !== 'undefined') {
+            console.log('🌟 Three.js version:', THREE.REVISION);
+        } else {
+            console.error('❌ Three.js NOT loaded!');
+        }
+
+        // Check if files are loading correctly
+        setTimeout(() => {
+            console.log('🌟 Game3D instance:', window.game3D);
+            console.log('🌟 Canvas element:', document.getElementById('game-canvas'));
+            console.log('🌟 CLEAN INTERFACE - No modals, square minimap!');
+        }, 1000);
+    </script>
+
+    <!-- Clean 3D-only interface - no 2D mode or toggles -->
+</body>
+</html>
