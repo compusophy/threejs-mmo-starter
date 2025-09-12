@@ -21,54 +21,7 @@ body {
     display: none !important;
 }
 
-/* Camera Controls */
-.camera-controls {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 0 0 6px 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.camera-btn {
-    width: 35px;
-    height: 35px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-}
-
-.camera-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: scale(1.05);
-}
-
-.camera-btn.active {
-    background: rgba(52, 152, 219, 0.8);
-    border-color: rgba(52, 152, 219, 1);
-    color: white;
-}
-
-.camera-btn:active {
-    transform: scale(0.95);
-}
-
+/* Camera controls removed - isometric only */
 /* Game Container */
 .game-container {
     max-width: 1200px;
@@ -779,11 +732,11 @@ body {
     top: 0;
     right: 0;
     width: 150px;
-    height: 200px; /* Increased height to accommodate camera controls */
+    height: 150px; /* Standard size - no camera controls */
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid #666;
     z-index: 150;
-    overflow: visible; /* Changed to visible so camera controls show */
+    overflow: hidden;
 }
 
 .minimap-content {

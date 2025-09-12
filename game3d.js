@@ -143,8 +143,7 @@ class Game3D {
         this.pathPoints = [];
         this.currentPathIndex = 0;
 
-        // Camera mode state
-        this.currentCameraMode = 'isometric';
+        // Camera is always isometric - no mode switching
 
         this.init();
         this.setupEventListeners();
@@ -1163,57 +1162,14 @@ class Game3D {
                 <div class="minimap-boundary minimap-east" style="position: absolute; top: 0; right: 0; bottom: 0; width: 2px; background: #8B4513;"></div>
                 <div class="minimap-boundary minimap-west" style="position: absolute; top: 0; left: 0; bottom: 0; width: 2px; background: #8B4513;"></div>
             </div>
-            <div class="camera-controls">
-                <button class="camera-btn active" id="isometric-btn" title="Isometric View">📐</button>
-            </div>
         `;
         document.body.appendChild(minimap);
 
-        // Add camera control event listeners
-        this.setupCameraControls();
+        // No camera controls needed - isometric only
     }
 
-    setupCameraControls() {
-        const isometricBtn = document.getElementById('isometric-btn');
-
-        // Current camera mode tracking - ISOMETRIC ONLY
-        this.currentCameraMode = 'isometric';
-
-        isometricBtn.addEventListener('click', () => {
-            this.setCameraMode('isometric');
-            this.updateCameraButtons('isometric');
-        });
-    }
-
-    setCameraMode(mode) {
-        this.currentCameraMode = mode;
-
-        switch(mode) {
-            case 'isometric':
-                // ISOMETRIC CAMERA: View from south at an angle
-                this.camera.position.set(0, 45, 45); // Position south of origin, elevated
-                this.camera.lookAt(0, 0, 0); // Looking at origin from isometric angle
-                break;
-
-
-        }
-
-        // Reset camera look-at target for smooth interpolation
-        this.cameraLookAtTarget = null;
-    }
-
-    updateCameraButtons(activeMode) {
-        // Remove active class from all buttons
-        document.querySelectorAll('.camera-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        // Add active class to current mode button
-        const activeBtn = document.getElementById(`${activeMode}-btn`);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
-    }
+    // Camera controls removed - isometric only
+    // Camera is always in isometric mode
 
     setupEventListeners() {
         console.log('Setting up event listeners');
@@ -1851,41 +1807,38 @@ class Game3D {
     }
 
     updateCamera() {
-        // Only update camera position for isometric mode
-        if (this.currentCameraMode === 'isometric') {
-            // ISOMETRIC CAMERA: Follow player from south at an angle
-            const cameraHeight = 45;
-            const cameraDistance = 45;
+        // ISOMETRIC CAMERA: Always follow player from south at an angle
+        const cameraHeight = 45;
+        const cameraDistance = 45;
 
-            // Position camera south of player, maintaining isometric angle
-            const idealPosition = new THREE.Vector3(
-                this.player.position.x,           // Same X as player
-                cameraHeight,                     // Fixed height above
-                this.player.position.z + cameraDistance  // South of player
-            );
+        // Position camera south of player, maintaining isometric angle
+        const idealPosition = new THREE.Vector3(
+            this.player.position.x,           // Same X as player
+            cameraHeight,                     // Fixed height above
+            this.player.position.z + cameraDistance  // South of player
+        );
 
-            // Smooth camera following
-            const lerpFactor = this.isMoving ? 0.15 : 0.1;
-            this.camera.position.lerp(idealPosition, lerpFactor);
+        // Smooth camera following
+        const lerpFactor = this.isMoving ? 0.15 : 0.1;
+        this.camera.position.lerp(idealPosition, lerpFactor);
 
-            // Look at player position from isometric angle
-            const lookAtTarget = new THREE.Vector3(
-                this.player.position.x,     // Look at player's X
-                0,                         // Look at ground level
-                this.player.position.z      // Look at player's Z
-            );
+        // Look at player position from isometric angle
+        const lookAtTarget = new THREE.Vector3(
+            this.player.position.x,     // Look at player's X
+            0,                         // Look at ground level
+            this.player.position.z      // Look at player's Z
+        );
 
-            // Smooth look-at interpolation to prevent rotation jitter
-            if (!this.cameraLookAtTarget) {
-                this.cameraLookAtTarget = lookAtTarget.clone();
-            }
-
-            // Interpolate look-at target for ultra-smooth rotation
-            this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
-
-            // Apply smooth look-at
-            this.camera.lookAt(this.cameraLookAtTarget);
+        // Smooth look-at interpolation to prevent rotation jitter
+        if (!this.cameraLookAtTarget) {
+            this.cameraLookAtTarget = lookAtTarget.clone();
         }
+
+        // Interpolate look-at target for ultra-smooth rotation
+        this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
+
+        // Apply smooth look-at
+        this.camera.lookAt(this.cameraLookAtTarget);
     }
 
     // Zoom system methods
