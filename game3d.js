@@ -200,18 +200,22 @@ class Game3D {
         const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
         this.scene.add(ambientLight);
 
-        // Directional light (sun) - angled for isometric feel
+        // Directional light (sun) - angled for isometric feel, repositioned to reduce edge shadows
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(30, 40, 30);
+        directionalLight.position.set(50, 60, 10); // Moved more to the side and higher to reduce edge shadows
         directionalLight.castShadow = true;
         directionalLight.shadow.mapSize.width = 2048;
         directionalLight.shadow.mapSize.height = 2048;
         directionalLight.shadow.camera.near = 0.5;
         directionalLight.shadow.camera.far = 500;
-        directionalLight.shadow.camera.left = -100;
-        directionalLight.shadow.camera.right = 100;
-        directionalLight.shadow.camera.top = 100;
-        directionalLight.shadow.camera.bottom = -100;
+        directionalLight.shadow.camera.left = -120; // Extended slightly to cover walls
+        directionalLight.shadow.camera.right = 120;
+        directionalLight.shadow.camera.top = 120;
+        directionalLight.shadow.camera.bottom = -120;
+
+        // Reduce shadow harshness
+        directionalLight.shadow.bias = -0.0001; // Small bias to reduce shadow acne
+        directionalLight.shadow.radius = 2; // Soft shadows
         this.scene.add(directionalLight);
 
         // Add fog for atmospheric depth
@@ -793,7 +797,7 @@ class Game3D {
         const northWallGeometry = new THREE.BoxGeometry(worldSize + wallThickness * 2, wallHeight, wallThickness);
         const northWall = new THREE.Mesh(northWallGeometry, wallMaterial);
         northWall.position.set(0, wallHeight / 2, worldSize / 2 + wallThickness / 2);
-        northWall.castShadow = true;
+        northWall.castShadow = false; // Disable shadows on boundary walls
         northWall.receiveShadow = true;
         northWall.userData = { type: 'wall', boundary: 'north' };
         this.scene.add(northWall);
@@ -811,7 +815,7 @@ class Game3D {
         const southWallGeometry = new THREE.BoxGeometry(worldSize + wallThickness * 2, wallHeight, wallThickness);
         const southWall = new THREE.Mesh(southWallGeometry, wallMaterial);
         southWall.position.set(0, wallHeight / 2, -worldSize / 2 - wallThickness / 2);
-        southWall.castShadow = true;
+        southWall.castShadow = false; // Disable shadows on boundary walls
         southWall.receiveShadow = true;
         southWall.userData = { type: 'wall', boundary: 'south' };
         this.scene.add(southWall);
@@ -829,7 +833,7 @@ class Game3D {
         const eastWallGeometry = new THREE.BoxGeometry(wallThickness, wallHeight, worldSize);
         const eastWall = new THREE.Mesh(eastWallGeometry, wallMaterial);
         eastWall.position.set(worldSize / 2 + wallThickness / 2, wallHeight / 2, 0);
-        eastWall.castShadow = true;
+        eastWall.castShadow = false; // Disable shadows on boundary walls to prevent edge artifacts
         eastWall.receiveShadow = true;
         eastWall.userData = { type: 'wall', boundary: 'east' };
         this.scene.add(eastWall);
@@ -847,7 +851,7 @@ class Game3D {
         const westWallGeometry = new THREE.BoxGeometry(wallThickness, wallHeight, worldSize);
         const westWall = new THREE.Mesh(westWallGeometry, wallMaterial);
         westWall.position.set(-worldSize / 2 - wallThickness / 2, wallHeight / 2, 0);
-        westWall.castShadow = true;
+        westWall.castShadow = false; // Disable shadows on boundary walls
         westWall.receiveShadow = true;
         westWall.userData = { type: 'wall', boundary: 'west' };
         this.scene.add(westWall);
@@ -1182,15 +1186,15 @@ class Game3D {
 
         // Use plane intersection for reliable click-to-move positioning
         const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Y=0 plane
-        const planeIntersect = new THREE.Vector3();
+            const planeIntersect = new THREE.Vector3();
         const intersectionResult = this.raycaster.ray.intersectPlane(plane, planeIntersect);
 
         console.log('Plane intersection result:', intersectionResult);
         console.log('Plane intersect point:', planeIntersect.x, planeIntersect.y, planeIntersect.z);
 
         let intersects = [];
-        if (planeIntersect && !isNaN(planeIntersect.x) && !isNaN(planeIntersect.y) && !isNaN(planeIntersect.z)) {
-            intersects = [{ point: planeIntersect }];
+            if (planeIntersect && !isNaN(planeIntersect.x) && !isNaN(planeIntersect.y) && !isNaN(planeIntersect.z)) {
+                intersects = [{ point: planeIntersect }];
             console.log('Valid click position:', planeIntersect.x, planeIntersect.z);
         } else {
             console.log('Invalid plane intersection - no valid point found');
