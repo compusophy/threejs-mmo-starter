@@ -419,16 +419,16 @@ class Game3D {
         const positions = geometry.attributes.position.array;
         const colors = [];
 
-        // Grass-focused color palette with various greens
+        // Forest green focused color palette - all variations of forest green
         const baseColors = [
-            [34, 139, 34],    // Forest green (darker grass)
-            [107, 142, 35],   // Olive drab (mature grass)
-            [85, 107, 47],    // Dark olive green (thick grass)
-            [154, 205, 50],   // Yellow green (fresh spring grass)
-            [60, 179, 113],   // Medium sea green (lush grass)
-            [46, 139, 87],    // Sea green (coastal grass)
-            [50, 205, 50],    // Lime green (vibrant grass)
-            [143, 188, 143],  // Light green (soft grass)
+            [34, 139, 34],    // Forest green (base)
+            [25, 120, 25],    // Darker forest green
+            [40, 150, 40],    // Lighter forest green
+            [30, 130, 30],    // Medium forest green
+            [45, 160, 45],    // Bright forest green
+            [20, 110, 20],    // Very dark forest green
+            [50, 170, 50],    // Very light forest green
+            [35, 140, 35],    // Standard forest green
         ];
 
         // Process each vertex (every 3 positions = 1 vertex)
@@ -503,16 +503,16 @@ class Game3D {
         const imageData = ctx.createImageData(size, size);
         const data = imageData.data;
 
-        // Grass-focused color palette with various greens
+        // Forest green focused color palette - all variations of forest green
         const baseColors = [
-            [34, 139, 34],    // Forest green (darker grass)
-            [107, 142, 35],   // Olive drab (mature grass)
-            [85, 107, 47],    // Dark olive green (thick grass)
-            [154, 205, 50],   // Yellow green (fresh spring grass)
-            [60, 179, 113],   // Medium sea green (lush grass)
-            [46, 139, 87],    // Sea green (coastal grass)
-            [50, 205, 50],    // Lime green (vibrant grass)
-            [143, 188, 143],  // Light green (soft grass)
+            [34, 139, 34],    // Forest green (base)
+            [25, 120, 25],    // Darker forest green
+            [40, 150, 40],    // Lighter forest green
+            [30, 130, 30],    // Medium forest green
+            [45, 160, 45],    // Bright forest green
+            [20, 110, 20],    // Very dark forest green
+            [50, 170, 50],    // Very light forest green
+            [35, 140, 35],    // Standard forest green
         ];
 
 
