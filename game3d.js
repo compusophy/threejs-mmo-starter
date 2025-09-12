@@ -1165,7 +1165,6 @@ class Game3D {
             </div>
             <div class="camera-controls">
                 <button class="camera-btn active" id="isometric-btn" title="Isometric View">📐</button>
-                <button class="camera-btn" id="birds-eye-btn" title="Bird's Eye View">🦅</button>
             </div>
         `;
         document.body.appendChild(minimap);
@@ -1176,19 +1175,13 @@ class Game3D {
 
     setupCameraControls() {
         const isometricBtn = document.getElementById('isometric-btn');
-        const birdsEyeBtn = document.getElementById('birds-eye-btn');
 
-        // Current camera mode tracking
+        // Current camera mode tracking - ISOMETRIC ONLY
         this.currentCameraMode = 'isometric';
 
         isometricBtn.addEventListener('click', () => {
             this.setCameraMode('isometric');
             this.updateCameraButtons('isometric');
-        });
-
-        birdsEyeBtn.addEventListener('click', () => {
-            this.setCameraMode('birds-eye');
-            this.updateCameraButtons('birds-eye');
         });
     }
 
@@ -1203,12 +1196,6 @@ class Game3D {
                 break;
 
 
-            case 'birds-eye':
-                // BIRD'S EYE: High above player, looking straight down
-                const playerPos = this.player.position.clone();
-                this.camera.position.set(playerPos.x, 80, playerPos.z); // High above player
-                this.camera.lookAt(playerPos.x, 0, playerPos.z); // Look straight down at player
-                break;
         }
 
         // Reset camera look-at target for smooth interpolation
@@ -1898,12 +1885,6 @@ class Game3D {
 
         // Apply smooth look-at
         this.camera.lookAt(this.cameraLookAtTarget);
-        } else if (this.currentCameraMode === 'birds-eye') {
-            // BIRD'S EYE: Follow player from high above
-            const playerPos = this.player.position.clone();
-            this.camera.position.set(playerPos.x, 80, playerPos.z);
-            this.camera.lookAt(playerPos.x, 0, playerPos.z);
-        }
     }
 
     // Zoom system methods
