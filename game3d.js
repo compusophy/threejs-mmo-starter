@@ -268,20 +268,27 @@ class Game3D {
         const imageData = ctx.createImageData(size, size);
         const data = imageData.data;
 
-        // Base colors for different ground types
+        // Medieval European earth tones - natural greens and browns
         const baseColors = [
-            [205, 133, 63],   // Peru (sandy brown)
-            [188, 143, 143],  // Rosy brown
-            [160, 82, 45],    // Sienna
-            [139, 69, 19],    // Saddle brown
-            [222, 184, 135],  // Burlywood (lighter)
+            [101, 67, 33],    // Dark brown (forest soil)
+            [139, 69, 19],    // Saddle brown (earthy)
+            [160, 82, 45],    // Sienna (autumn leaves)
+            [107, 142, 35],   // Olive drab (grass/earth mix)
+            [85, 107, 47],    // Dark olive green (meadow grass)
+            [34, 139, 34],    // Forest green (pine needles)
+            [154, 205, 50],   // Yellow green (fresh grass)
+            [218, 165, 32],   // Goldenrod (wildflowers)
         ];
 
-        // Simple noise function (pseudo-Perlin-like)
+        // Enhanced noise function for natural European terrain
         const noise = (x, y, scale = 0.1) => {
-            const n = Math.sin(x * scale) * Math.cos(y * scale) +
-                     Math.sin(x * scale * 2.3) * Math.cos(y * scale * 1.7) * 0.5 +
-                     Math.sin(x * scale * 4.1) * Math.cos(y * scale * 3.2) * 0.25;
+            // Multiple octaves for more organic, natural patterns
+            const n1 = Math.sin(x * scale) * Math.cos(y * scale);
+            const n2 = Math.sin(x * scale * 2.7) * Math.cos(y * scale * 2.1) * 0.4;
+            const n3 = Math.sin(x * scale * 5.3) * Math.cos(y * scale * 4.7) * 0.2;
+            const n4 = Math.sin(x * scale * 11.1) * Math.cos(y * scale * 9.7) * 0.1;
+
+            const n = n1 + n2 + n3 + n4;
             return (n + 1) / 2; // Normalize to 0-1
         };
 
@@ -290,29 +297,41 @@ class Game3D {
             for (let x = 0; x < size; x++) {
                 const pixelIndex = (y * size + x) * 4;
 
-                // Multiple noise layers for complexity
-                const noise1 = noise(x, y, 0.05);
-                const noise2 = noise(x, y, 0.15);
-                const noise3 = noise(x, y, 0.3);
+                // Multiple noise layers for natural European terrain variation
+                const largeNoise = noise(x, y, 0.03);    // Large terrain features
+                const mediumNoise = noise(x, y, 0.08);   // Medium terrain features
+                const smallNoise = noise(x, y, 0.2);     // Small terrain details
+                const microNoise = noise(x, y, 0.5);     // Micro details
 
-                // Combine noises with different weights
-                const combinedNoise = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
+                // Combine noises with European landscape weights
+                const combinedNoise = largeNoise * 0.4 + mediumNoise * 0.35 + smallNoise * 0.2 + microNoise * 0.05;
 
-                // Add some random speckles
-                const speckle = Math.random() * 0.2;
+                // Add organic variation (less random speckles, more natural)
+                const organicVariation = (Math.random() - 0.5) * 0.15;
 
-                // Select base color based on noise
-                const colorIndex = Math.floor(combinedNoise * baseColors.length);
+                // Select base color based on noise - bias toward greens and earth tones
+                let colorIndex;
+                if (combinedNoise < 0.3) {
+                    // Dark forest areas
+                    colorIndex = Math.floor(Math.random() * 3); // First 3 colors (dark browns)
+                } else if (combinedNoise < 0.7) {
+                    // Mixed meadow/forest
+                    colorIndex = 3 + Math.floor(Math.random() * 3); // Colors 3-5 (olive/earth greens)
+                } else {
+                    // Light meadow areas
+                    colorIndex = 5 + Math.floor(Math.random() * 3); // Colors 5-7 (bright greens)
+                }
+
                 const baseColor = baseColors[Math.min(colorIndex, baseColors.length - 1)];
 
-                // Apply noise variation and speckles
-                const variation = (combinedNoise - 0.5) * 40; // ±20 variation
-                const speckleVariation = (speckle - 0.1) * 30; // Subtle speckles
+                // Apply natural variation for European landscape
+                const terrainVariation = (combinedNoise - 0.5) * 25; // ±12.5 variation
+                const organicVariationValue = organicVariation * 20; // ±10 organic variation
 
                 // Calculate final RGB values with clamping
-                const r = Math.max(0, Math.min(255, baseColor[0] + variation + speckleVariation));
-                const g = Math.max(0, Math.min(255, baseColor[1] + variation + speckleVariation));
-                const b = Math.max(0, Math.min(255, baseColor[2] + variation + speckleVariation));
+                const r = Math.max(0, Math.min(255, baseColor[0] + terrainVariation + organicVariationValue));
+                const g = Math.max(0, Math.min(255, baseColor[1] + terrainVariation + organicVariationValue));
+                const b = Math.max(0, Math.min(255, baseColor[2] + terrainVariation + organicVariationValue));
 
                 // Set pixel data
                 data[pixelIndex] = r;     // Red
@@ -325,15 +344,39 @@ class Game3D {
         // Put the image data on the canvas
         ctx.putImageData(imageData, 0, 0);
 
-        // Add some subtle grass-like details
+        // Add medieval European landscape details
         ctx.globalCompositeOperation = 'overlay';
-        ctx.fillStyle = 'rgba(34, 139, 34, 0.1)'; // Dark green with low opacity
 
-        // Add small green patches for grass effect
-        for (let i = 0; i < 15; i++) {
+        // Add subtle moss patches (darker green)
+        ctx.fillStyle = 'rgba(34, 139, 34, 0.08)'; // Forest green moss
+        for (let i = 0; i < 12; i++) {
             const x = Math.random() * size;
             const y = Math.random() * size;
-            const radius = Math.random() * 3 + 1;
+            const radius = Math.random() * 2 + 0.5;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Add wildflowers/heather (purplish)
+        ctx.fillStyle = 'rgba(138, 43, 226, 0.06)'; // Blue violet flowers
+        for (let i = 0; i < 8; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const radius = Math.random() * 1.5 + 0.5;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Add subtle golden wildflowers
+        ctx.fillStyle = 'rgba(218, 165, 32, 0.05)'; // Goldenrod flowers
+        for (let i = 0; i < 6; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const radius = Math.random() * 1 + 0.5;
 
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
