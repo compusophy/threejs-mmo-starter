@@ -165,25 +165,61 @@ class Game3D {
         const leavesGeometry = new THREE.SphereGeometry(3);
         const leavesMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
 
+        // Store tree positions for collision checking
+        this.treePositions = [];
+        const minTreeDistance = 8; // Minimum distance between trees
+        const maxAttempts = 50; // Max attempts to find valid position
+
         for (let i = 0; i < 20; i++) {
+            let validPosition = false;
+            let attempts = 0;
+            let treeX, treeZ;
+
+            // Try to find a valid position that doesn't overlap with existing trees
+            while (!validPosition && attempts < maxAttempts) {
+                treeX = (Math.random() - 0.5) * 80;
+                treeZ = (Math.random() - 0.5) * 80;
+
+                validPosition = true;
+                // Check distance from all existing trees
+                for (const existingPos of this.treePositions) {
+                    const distance = Math.sqrt(
+                        Math.pow(treeX - existingPos.x, 2) +
+                        Math.pow(treeZ - existingPos.z, 2)
+                    );
+                    if (distance < minTreeDistance) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                attempts++;
+            }
+
+            // If we couldn't find a valid position, skip this tree
+            if (!validPosition) {
+                console.warn(`Could not find valid position for tree ${i} after ${maxAttempts} attempts`);
+                continue;
+            }
+
+            // Store the position for future collision checks
+            this.treePositions.push({ x: treeX, z: treeZ });
+
             // Tree trunk
             const trunk = new THREE.Mesh(treeGeometry, treeMaterial);
-            trunk.position.set(
-                (Math.random() - 0.5) * 80,
-                3,
-                (Math.random() - 0.5) * 80
-            );
+            trunk.position.set(treeX, 3, treeZ);
             trunk.castShadow = true;
-            trunk.userData = { type: 'tree', id: i };
+            trunk.userData = { type: 'tree', id: i, collisionRadius: 2.5 };
             this.scene.add(trunk);
 
             // Tree leaves
             const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
-            leaves.position.set(trunk.position.x, trunk.position.y + 4, trunk.position.z);
+            leaves.position.set(treeX, 3 + 4, treeZ);
             leaves.castShadow = true;
-            leaves.userData = { type: 'tree_leaves', treeId: i };
+            leaves.userData = { type: 'tree_leaves', treeId: i, collisionRadius: 3 };
             this.scene.add(leaves);
         }
+
+        console.log(`Created ${this.treePositions.length} trees with proper spacing`);
     }
 
     createWater() {
@@ -517,6 +553,14 @@ class Game3D {
             const targetPos = intersects[0].point;
             console.log('Target position:', targetPos.x, targetPos.y, targetPos.z);
 
+            // Check if target position collides with trees
+            if (!this.checkTreeCollisions(targetPos)) {
+                console.log('Cannot move to position - tree collision detected');
+                // Still show click effect but don't set movement target
+                this.showClickEffect(targetPos);
+                return;
+            }
+
             // Visual feedback for click
             this.showClickEffect(targetPos);
             this.setMovementTarget(targetPos);
@@ -529,7 +573,16 @@ class Game3D {
                 0,
                 this.mouse.y * 50
             );
+
+            // Check if fallback position collides with trees
+            if (!this.checkTreeCollisions(fallbackPos)) {
+                console.log('Cannot move to fallback position - tree collision detected');
+                this.showClickEffect(fallbackPos);
+                return;
+            }
+
             this.showClickEffect(fallbackPos);
+            this.setMovementTarget(fallbackPos);
             console.log('Showing fallback click effect at:', fallbackPos);
         }
     }
@@ -805,9 +858,9 @@ class Game3D {
         const moveDistance = (this.moveSpeed * deltaTime) / 16.67; // Normalize to 60fps
         const moveVector = direction.multiplyScalar(moveDistance);
 
-        // Check collision with world boundaries before applying movement
+        // Check collision with world boundaries and trees before applying movement
         const newPosition = this.player.position.clone().add(moveVector);
-        if (this.checkWorldBoundaries(newPosition)) {
+        if (this.checkWorldBoundaries(newPosition) && this.checkTreeCollisions(newPosition)) {
             // Apply smooth movement if no collision
             this.player.position.add(moveVector);
         }
@@ -937,6 +990,30 @@ class Game3D {
         }
 
         return true; // No collision, allow movement
+    }
+
+    checkTreeCollisions(position) {
+        if (!this.treePositions) return true; // No trees to check
+
+        const playerRadius = 1; // Player collision radius
+
+        // Check collision with each tree
+        for (let i = 0; i < this.treePositions.length; i++) {
+            const treePos = this.treePositions[i];
+            const distance = Math.sqrt(
+                Math.pow(position.x - treePos.x, 2) +
+                Math.pow(position.z - treePos.z, 2)
+            );
+
+            // Use tree collision radius from userData (default to 2.5 if not set)
+            const treeRadius = 2.5; // Conservative collision radius for trees
+
+            if (distance < playerRadius + treeRadius) {
+                return false; // Collision detected, don't allow movement
+            }
+        }
+
+        return true; // No collision with trees, allow movement
     }
 
     updateMinimap() {
