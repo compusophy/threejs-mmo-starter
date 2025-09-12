@@ -256,9 +256,13 @@ class Game3D {
 
         // Player character group with realistic human proportions
         this.player = new THREE.Group();
-        // Position player so feet are exactly on ground level (Y=0)
-        // The ground plane is at Y=0, so feet should be at Y=0
-        this.player.position.set(0, 0, 0); // Feet at ground level
+
+        // Calculate the exact Y offset needed so feet touch ground at Y=0
+        // The feet are positioned at: -(legLength * 0.5) - (legLength * 0.45) - 0.04 from hip
+        const legLength = totalHeight * 0.54; // 0.972
+        const feetOffset = (legLength * 0.5) + (legLength * 0.45) + 0.04; // ~0.963
+
+        this.player.position.set(0, feetOffset, 0); // Position so feet touch Y=0
 
         // Colors for different body parts
         const skinColor = 0xFFDBAC;
@@ -882,7 +886,9 @@ class Game3D {
         this.head.rotation.z = 0;
 
         // Reset vertical position (feet on ground level)
-        this.player.position.y = 0; // Feet at ground level (Y=0)
+        const legLength = 1.8 * 0.54; // Same calculation as in createPlayer
+        const feetOffset = (legLength * 0.5) + (legLength * 0.45) + 0.04;
+        this.player.position.y = feetOffset; // Feet at ground level (Y=0)
     }
 
     updateCamera() {
