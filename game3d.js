@@ -828,6 +828,7 @@ class Game3D {
 
         // Raycast to ground plane for movement destination
         this.raycaster.setFromCamera(this.mouse, this.camera);
+        console.log('=== NEW CLICK DETECTED ===');
         console.log('Raycaster set from camera with mouse coords:', this.mouse.x.toFixed(3), this.mouse.y.toFixed(3));
 
         // Use plane intersection for reliable click-to-move positioning
@@ -944,7 +945,9 @@ class Game3D {
     }
 
     setMovementTarget(targetPosition) {
-        console.log('Setting movement target:', targetPosition.x, targetPosition.y, targetPosition.z);
+        console.log('=== SETTING MOVEMENT TARGET ===');
+        console.log('New target position:', targetPosition.x.toFixed(4), targetPosition.y.toFixed(4), targetPosition.z.toFixed(4));
+        console.log('Current player position:', this.player.position.x.toFixed(4), this.player.position.z.toFixed(4));
 
         // Simple click-to-move: use exact click position
         this.targetPosition = targetPosition.clone();
@@ -1145,6 +1148,26 @@ class Game3D {
         // Integrate with existing gathering system
     }
 
+    forceStopMovement() {
+        console.log('=== FORCE STOP MOVEMENT ===');
+        // Snap to target position if it exists
+        if (this.targetPosition) {
+            this.player.position.x = this.targetPosition.x;
+            this.player.position.z = this.targetPosition.z;
+            this.player.position.y = this.targetPosition.y;
+        }
+
+        // Reset all movement state
+        this.isMoving = false;
+        this.targetPosition = null;
+        this.pathPoints = [];
+        this.currentPathIndex = 0;
+        this.isWalking = false;
+        this.resetPlayerPose();
+        this.clearWaypointMarkers();
+        console.log('Movement force-stopped, player at:', this.player.position.x.toFixed(2), this.player.position.z.toFixed(2));
+    }
+
     update(deltaTime = 16.67) { // Default to ~60fps delta time
         // Handle player movement with delta time for consistency
         this.handleMovement(deltaTime);
@@ -1176,16 +1199,32 @@ class Game3D {
         this.isWalking = true;
 
         // Calculate direction to target
-        const direction = new THREE.Vector3()
-            .subVectors(this.targetPosition, this.player.position)
-            .normalize();
+        const rawDirection = new THREE.Vector3()
+            .subVectors(this.targetPosition, this.player.position);
+
+        // Check if direction vector is valid (not zero-length)
+        if (rawDirection.length() < 0.001) {
+            console.log('FORCE STOP: Direction vector too small, player already at target');
+            this.forceStopMovement();
+            return;
+        }
+
+        const direction = rawDirection.normalize();
 
         // Calculate distance to target
         const distance = this.player.position.distanceTo(this.targetPosition);
+        console.log('Distance to target:', distance.toFixed(4), 'Position:', this.player.position.x.toFixed(2), this.player.position.z.toFixed(2), 'Target:', this.targetPosition.x.toFixed(2), this.targetPosition.z.toFixed(2));
 
-        if (distance < 0.01) {
+        // Safety check: if distance is very small or NaN, force stop
+        if (isNaN(distance) || distance < 0.05) { // Even more forgiving threshold
+            console.log('FORCE STOP: Distance too small or invalid:', distance);
+            this.forceStopMovement();
+            return;
+        }
+
+        if (distance < 0.1) { // Increased threshold from 0.01 to 0.1 for touch imprecision
             // Reached current waypoint
-            console.log('Reached waypoint:', this.currentPathIndex);
+            console.log('Reached waypoint:', this.currentPathIndex, 'Distance:', distance.toFixed(4));
 
             // Move to next waypoint in path
             this.currentPathIndex++;
@@ -1223,6 +1262,7 @@ class Game3D {
         if (this.checkCollisions(newPosition)) {
             // Apply smooth movement if no collision
             this.player.position.add(moveVector);
+            console.log('Moving player - Distance to target:', distance.toFixed(4), 'Move distance:', moveDistance.toFixed(4));
         } else {
             console.log('Movement blocked by obstacle');
         }
