@@ -143,6 +143,9 @@ class Game3D {
         this.pathPoints = [];
         this.currentPathIndex = 0;
 
+        // Camera mode state
+        this.currentCameraMode = 'isometric';
+
         this.init();
         this.setupEventListeners();
         this.animate();
@@ -1113,10 +1116,82 @@ class Game3D {
                 <div class="minimap-boundary minimap-east" style="position: absolute; top: 0; right: 0; bottom: 0; width: 2px; background: #8B4513;"></div>
                 <div class="minimap-boundary minimap-west" style="position: absolute; top: 0; left: 0; bottom: 0; width: 2px; background: #8B4513;"></div>
             </div>
+            <div class="camera-controls">
+                <button class="camera-btn active" id="isometric-btn" title="Isometric View">📐</button>
+                <button class="camera-btn" id="first-person-btn" title="First Person View">👁️</button>
+                <button class="camera-btn" id="birds-eye-btn" title="Bird's Eye View">🦅</button>
+            </div>
         `;
         document.body.appendChild(minimap);
+
+        // Add camera control event listeners
+        this.setupCameraControls();
     }
 
+    setupCameraControls() {
+        const isometricBtn = document.getElementById('isometric-btn');
+        const firstPersonBtn = document.getElementById('first-person-btn');
+        const birdsEyeBtn = document.getElementById('birds-eye-btn');
+
+        // Current camera mode tracking
+        this.currentCameraMode = 'isometric';
+
+        isometricBtn.addEventListener('click', () => {
+            this.setCameraMode('isometric');
+            this.updateCameraButtons('isometric');
+        });
+
+        firstPersonBtn.addEventListener('click', () => {
+            this.setCameraMode('first-person');
+            this.updateCameraButtons('first-person');
+        });
+
+        birdsEyeBtn.addEventListener('click', () => {
+            this.setCameraMode('birds-eye');
+            this.updateCameraButtons('birds-eye');
+        });
+    }
+
+    setCameraMode(mode) {
+        this.currentCameraMode = mode;
+
+        switch(mode) {
+            case 'isometric':
+                // ISOMETRIC CAMERA: View from south at an angle
+                this.camera.position.set(0, 45, 45); // Position south of origin, elevated
+                this.camera.lookAt(0, 0, 0); // Looking at origin from isometric angle
+                break;
+
+            case 'first-person':
+                // FIRST PERSON: Behind the player, eye-level
+                const playerPos = this.player.position.clone();
+                this.camera.position.set(playerPos.x, playerPos.y + 1.7, playerPos.z - 2); // Behind player
+                this.camera.lookAt(playerPos.x, playerPos.y + 1.7, playerPos.z + 10); // Look ahead
+                break;
+
+            case 'birds-eye':
+                // BIRD'S EYE: High above, looking straight down
+                this.camera.position.set(0, 80, 0); // High above center
+                this.camera.lookAt(0, 0, 0); // Look straight down
+                break;
+        }
+
+        // Reset camera look-at target for smooth interpolation
+        this.cameraLookAtTarget = null;
+    }
+
+    updateCameraButtons(activeMode) {
+        // Remove active class from all buttons
+        document.querySelectorAll('.camera-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Add active class to current mode button
+        const activeBtn = document.getElementById(`${activeMode}-btn`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    }
 
     setupEventListeners() {
         console.log('Setting up event listeners');
@@ -1761,38 +1836,50 @@ class Game3D {
     }
 
     updateCamera() {
-        // ISOMETRIC CAMERA: Follow player from south at an angle
-        const cameraHeight = 45;
-        const cameraDistance = 45;
+        // Only update camera position for isometric mode
+        if (this.currentCameraMode === 'isometric') {
+            // ISOMETRIC CAMERA: Follow player from south at an angle
+            const cameraHeight = 45;
+            const cameraDistance = 45;
 
-        // Position camera south of player, maintaining isometric angle
-        const idealPosition = new THREE.Vector3(
-            this.player.position.x,           // Same X as player
-            cameraHeight,                     // Fixed height above
-            this.player.position.z + cameraDistance  // South of player
-        );
+            // Position camera south of player, maintaining isometric angle
+            const idealPosition = new THREE.Vector3(
+                this.player.position.x,           // Same X as player
+                cameraHeight,                     // Fixed height above
+                this.player.position.z + cameraDistance  // South of player
+            );
 
-        // Smooth camera following
-        const lerpFactor = this.isMoving ? 0.15 : 0.1;
-        this.camera.position.lerp(idealPosition, lerpFactor);
+            // Smooth camera following
+            const lerpFactor = this.isMoving ? 0.15 : 0.1;
+            this.camera.position.lerp(idealPosition, lerpFactor);
 
-        // Look at player position from isometric angle
-        const lookAtTarget = new THREE.Vector3(
-            this.player.position.x,     // Look at player's X
-            0,                         // Look at ground level
-            this.player.position.z      // Look at player's Z
-        );
+            // Look at player position from isometric angle
+            const lookAtTarget = new THREE.Vector3(
+                this.player.position.x,     // Look at player's X
+                0,                         // Look at ground level
+                this.player.position.z      // Look at player's Z
+            );
 
-        // Smooth look-at interpolation to prevent rotation jitter
-        if (!this.cameraLookAtTarget) {
-            this.cameraLookAtTarget = lookAtTarget.clone();
+            // Smooth look-at interpolation to prevent rotation jitter
+            if (!this.cameraLookAtTarget) {
+                this.cameraLookAtTarget = lookAtTarget.clone();
+            }
+
+            // Interpolate look-at target for ultra-smooth rotation
+            this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
+
+            // Apply smooth look-at
+            this.camera.lookAt(this.cameraLookAtTarget);
+        } else if (this.currentCameraMode === 'first-person') {
+            // FIRST PERSON: Keep camera behind player
+            const playerPos = this.player.position.clone();
+            this.camera.position.set(playerPos.x, playerPos.y + 1.7, playerPos.z - 2);
+            this.camera.lookAt(playerPos.x, playerPos.y + 1.7, playerPos.z + 10);
+        } else if (this.currentCameraMode === 'birds-eye') {
+            // BIRD'S EYE: Stay high above center
+            this.camera.position.set(0, 80, 0);
+            this.camera.lookAt(0, 0, 0);
         }
-
-        // Interpolate look-at target for ultra-smooth rotation
-        this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
-
-        // Apply smooth look-at
-        this.camera.lookAt(this.cameraLookAtTarget);
     }
 
     // Zoom system methods
