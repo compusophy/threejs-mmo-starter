@@ -253,7 +253,7 @@ class Game3D {
         console.log('Creating enhanced procedural ground texture...');
 
         const canvas = document.createElement('canvas');
-        const size = 128; // Higher resolution for better detail
+        const size = 256; // Higher resolution for smoother tiling
         canvas.width = size;
         canvas.height = size;
 
@@ -280,13 +280,20 @@ class Game3D {
             [218, 165, 32],   // Goldenrod (wildflowers)
         ];
 
-        // Enhanced noise function for natural European terrain
+        // Seamless tiling noise function for European terrain
         const noise = (x, y, scale = 0.1) => {
-            // Multiple octaves for more organic, natural patterns
-            const n1 = Math.sin(x * scale) * Math.cos(y * scale);
-            const n2 = Math.sin(x * scale * 2.7) * Math.cos(y * scale * 2.1) * 0.4;
-            const n3 = Math.sin(x * scale * 5.3) * Math.cos(y * scale * 4.7) * 0.2;
-            const n4 = Math.sin(x * scale * 11.1) * Math.cos(y * scale * 9.7) * 0.1;
+            // Use smooth interpolation for seamless tiling
+            const smooth = (t) => t * t * (3 - 2 * t);
+
+            // Create seamless coordinates
+            const u = smooth((x / size) % 1);
+            const v = smooth((y / size) % 1);
+
+            // Multiple octaves with different frequencies for natural patterns
+            const n1 = Math.sin(u * scale * Math.PI * 2) * Math.cos(v * scale * Math.PI * 2);
+            const n2 = Math.sin(u * scale * 2.7 * Math.PI * 2) * Math.cos(v * scale * 2.1 * Math.PI * 2) * 0.4;
+            const n3 = Math.sin(u * scale * 5.3 * Math.PI * 2) * Math.cos(v * scale * 4.7 * Math.PI * 2) * 0.2;
+            const n4 = Math.sin(u * scale * 11.1 * Math.PI * 2) * Math.cos(v * scale * 9.7 * Math.PI * 2) * 0.1;
 
             const n = n1 + n2 + n3 + n4;
             return (n + 1) / 2; // Normalize to 0-1
@@ -344,6 +351,52 @@ class Game3D {
         // Put the image data on the canvas
         ctx.putImageData(imageData, 0, 0);
 
+        // Add edge blending for seamless tiling
+        const blendRadius = 8; // Pixels to blend at edges
+        const blendStrength = 0.3; // How much to blend
+
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                // Calculate distance from edges
+                const distFromLeft = x;
+                const distFromRight = size - 1 - x;
+                const distFromTop = y;
+                const distFromBottom = size - 1 - y;
+
+                const minDistFromEdge = Math.min(distFromLeft, distFromRight, distFromTop, distFromBottom);
+
+                if (minDistFromEdge < blendRadius) {
+                    const blendFactor = (blendRadius - minDistFromEdge) / blendRadius * blendStrength;
+
+                    // Get current pixel
+                    const pixelIndex = (y * size + x) * 4;
+                    const currentR = data[pixelIndex];
+                    const currentG = data[pixelIndex + 1];
+                    const currentB = data[pixelIndex + 2];
+
+                    // Blend with center value for seamless tiling
+                    const centerX = Math.floor(size / 2);
+                    const centerY = Math.floor(size / 2);
+                    const centerIndex = (centerY * size + centerX) * 4;
+                    const centerR = data[centerIndex];
+                    const centerG = data[centerIndex + 1];
+                    const centerB = data[centerIndex + 2];
+
+                    // Apply blending
+                    const blendedR = currentR * (1 - blendFactor) + centerR * blendFactor;
+                    const blendedG = currentG * (1 - blendFactor) + centerG * blendFactor;
+                    const blendedB = currentB * (1 - blendFactor) + centerB * blendFactor;
+
+                    data[pixelIndex] = blendedR;
+                    data[pixelIndex + 1] = blendedG;
+                    data[pixelIndex + 2] = blendedB;
+                }
+            }
+        }
+
+        // Put the blended image data back
+        ctx.putImageData(imageData, 0, 0);
+
         // Add medieval European landscape details
         ctx.globalCompositeOperation = 'overlay';
 
@@ -386,7 +439,7 @@ class Game3D {
         const texture = new THREE.CanvasTexture(canvas);
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(12, 12); // More repeats for larger texture coverage
+        texture.repeat.set(8, 8); // Adjusted for larger texture size
         texture.generateMipmaps = true; // Enable mipmaps for better performance
 
         console.log('Enhanced procedural ground texture created:', texture);
