@@ -419,16 +419,16 @@ class Game3D {
         const positions = geometry.attributes.position.array;
         const colors = [];
 
-        // Medieval European earth tones - same palette as texture
+        // Grass-focused color palette with various greens
         const baseColors = [
-            [101, 67, 33],    // Dark brown (forest soil)
-            [139, 69, 19],    // Saddle brown (earthy)
-            [160, 82, 45],    // Sienna (autumn leaves)
-            [107, 142, 35],   // Olive drab (grass/earth mix)
-            [85, 107, 47],    // Dark olive green (meadow grass)
-            [34, 139, 34],    // Forest green (pine needles)
-            [154, 205, 50],   // Yellow green (fresh grass)
-            [218, 165, 32],   // Goldenrod (wildflowers)
+            [34, 139, 34],    // Forest green (darker grass)
+            [107, 142, 35],   // Olive drab (mature grass)
+            [85, 107, 47],    // Dark olive green (thick grass)
+            [154, 205, 50],   // Yellow green (fresh spring grass)
+            [60, 179, 113],   // Medium sea green (lush grass)
+            [46, 139, 87],    // Sea green (coastal grass)
+            [50, 205, 50],    // Lime green (vibrant grass)
+            [143, 188, 143],  // Light green (soft grass)
         ];
 
         // Process each vertex (every 3 positions = 1 vertex)
@@ -436,25 +436,25 @@ class Game3D {
             const x = positions[i];     // X coordinate (-100 to 100)
             const z = positions[i + 2]; // Z coordinate (-100 to 100)
 
-            // Generate multiple noise layers for organic variation
-            const terrainNoise = this.noise(x * 0.01, z * 0.01, 0);
-            const detailNoise = this.noise(x * 0.03, z * 0.03, 1000);
-            const colorNoise = this.noise(x * 0.05, z * 0.05, 2000);
+            // Generate multiple noise layers for organic variation (higher frequency for more detail)
+            const terrainNoise = this.noise(x * 0.02, z * 0.02, 0);
+            const detailNoise = this.noise(x * 0.06, z * 0.06, 1000);
+            const colorNoise = this.noise(x * 0.1, z * 0.1, 2000);
 
             // Combine noises with organic weights
             const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.15;
 
-            // Select color based on terrain type
+            // Select color based on terrain type - heavily biased towards greens
             let colorIndex;
-            if (terrainNoise < 0.35) {
-                // Dark forest areas
-                colorIndex = Math.floor(terrainNoise * 3); // Colors 0-2
-            } else if (terrainNoise < 0.65) {
-                // Mixed forest/meadow
-                colorIndex = 2 + Math.floor((terrainNoise - 0.35) * 4); // Colors 2-5
+            if (terrainNoise < 0.15) {
+                // Darker grass areas (rare, for variety)
+                colorIndex = Math.floor(terrainNoise * 2); // Colors 0-1 (darker greens)
+            } else if (terrainNoise < 0.8) {
+                // Main grassland areas (most common - 65% of area)
+                colorIndex = 2 + Math.floor((terrainNoise - 0.15) * 4); // Colors 2-5 (medium greens)
             } else {
-                // Bright meadow areas
-                colorIndex = 5 + Math.floor((terrainNoise - 0.65) * 3); // Colors 5-7
+                // Bright, vibrant grass areas (for highlights)
+                colorIndex = 6 + Math.floor((terrainNoise - 0.8) * 2); // Colors 6-7 (bright greens)
             }
 
             // Add some natural randomness
@@ -504,16 +504,16 @@ class Game3D {
         const imageData = ctx.createImageData(size, size);
         const data = imageData.data;
 
-        // Medieval European earth tones - natural greens and browns
+        // Grass-focused color palette with various greens
         const baseColors = [
-            [101, 67, 33],    // Dark brown (forest soil)
-            [139, 69, 19],    // Saddle brown (earthy)
-            [160, 82, 45],    // Sienna (autumn leaves)
-            [107, 142, 35],   // Olive drab (grass/earth mix)
-            [85, 107, 47],    // Dark olive green (meadow grass)
-            [34, 139, 34],    // Forest green (pine needles)
-            [154, 205, 50],   // Yellow green (fresh grass)
-            [218, 165, 32],   // Goldenrod (wildflowers)
+            [34, 139, 34],    // Forest green (darker grass)
+            [107, 142, 35],   // Olive drab (mature grass)
+            [85, 107, 47],    // Dark olive green (thick grass)
+            [154, 205, 50],   // Yellow green (fresh spring grass)
+            [60, 179, 113],   // Medium sea green (lush grass)
+            [46, 139, 87],    // Sea green (coastal grass)
+            [50, 205, 50],    // Lime green (vibrant grass)
+            [143, 188, 143],  // Light green (soft grass)
         ];
 
 
