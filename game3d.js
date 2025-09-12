@@ -188,8 +188,9 @@ class Game3D {
         // Player character
         this.createPlayer();
 
-        // UI - Only minimap, no HUD
+        // UI - Minimap and UI overlay
         this.createMinimap();
+        this.createUIOverlay();
 
         // Resize handler
         window.addEventListener('resize', () => this.onWindowResize());
@@ -1115,6 +1116,20 @@ class Game3D {
             </div>
         `;
         document.body.appendChild(minimap);
+    }
+
+    createUIOverlay() {
+        const uiOverlay = document.createElement('div');
+        uiOverlay.id = 'ui-overlay';
+        uiOverlay.innerHTML = `
+            <div class="ui-row">
+                <div class="ui-square" id="square-1">⚔️</div>
+                <div class="ui-square" id="square-2">🛡️</div>
+                <div class="ui-square" id="square-3">🏹</div>
+                <div class="ui-square" id="square-4">💰</div>
+            </div>
+        `;
+        document.body.appendChild(uiOverlay);
     }
 
     setupEventListeners() {
