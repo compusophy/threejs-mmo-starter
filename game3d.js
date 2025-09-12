@@ -219,14 +219,15 @@ class Game3D {
     }
 
     createWorld() {
-        // Ground plane with enhanced procedural texture
-        const groundGeometry = new THREE.PlaneGeometry(200, 200);
+        // Ground plane with vertex-based procedural coloring (no tiling!)
+        const groundGeometry = new THREE.PlaneGeometry(200, 200, 100, 100); // Higher subdivision for smoother noise
 
-        // Create enhanced procedural texture
-        const groundTexture = this.createGroundTexture();
+        // Apply vertex-based noise coloring instead of texture
+        this.applyVertexNoiseColoring(groundGeometry);
+
         const groundMaterial = new THREE.MeshLambertMaterial({
-            map: groundTexture,
-            transparent: false // No transparency needed with texture
+            vertexColors: true, // Use vertex colors instead of texture
+            transparent: false
         });
 
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -395,6 +396,82 @@ class Game3D {
 
         console.log('Tree leaf texture created');
         return texture;
+    }
+
+    applyVertexNoiseColoring(geometry) {
+        console.log('Applying vertex-based noise coloring to ground...');
+
+        const positions = geometry.attributes.position.array;
+        const colors = [];
+
+        // Medieval European earth tones - same palette as texture
+        const baseColors = [
+            [101, 67, 33],    // Dark brown (forest soil)
+            [139, 69, 19],    // Saddle brown (earthy)
+            [160, 82, 45],    // Sienna (autumn leaves)
+            [107, 142, 35],   // Olive drab (grass/earth mix)
+            [85, 107, 47],    // Dark olive green (meadow grass)
+            [34, 139, 34],    // Forest green (pine needles)
+            [154, 205, 50],   // Yellow green (fresh grass)
+            [218, 165, 32],   // Goldenrod (wildflowers)
+        ];
+
+        // Process each vertex (every 3 positions = 1 vertex)
+        for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i];     // X coordinate (-100 to 100)
+            const z = positions[i + 2]; // Z coordinate (-100 to 100)
+
+            // Convert to 0-1 range for noise calculation
+            const u = (x + 100) / 200; // 0 to 1
+            const v = (z + 100) / 200; // 0 to 1
+
+            // Generate multiple noise layers for organic variation
+            const terrainNoise = this.noise(x * 0.01, z * 0.01, 0);
+            const detailNoise = this.noise(x * 0.03, z * 0.03, 1000);
+            const colorNoise = this.noise(x * 0.05, z * 0.05, 2000);
+
+            // Combine noises with organic weights
+            const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.15;
+
+            // Select color based on terrain type
+            let colorIndex;
+            if (terrainNoise < 0.35) {
+                // Dark forest areas
+                colorIndex = Math.floor(terrainNoise * 3); // Colors 0-2
+            } else if (terrainNoise < 0.65) {
+                // Mixed forest/meadow
+                colorIndex = 2 + Math.floor((terrainNoise - 0.35) * 4); // Colors 2-5
+            } else {
+                // Bright meadow areas
+                colorIndex = 5 + Math.floor((terrainNoise - 0.65) * 3); // Colors 5-7
+            }
+
+            // Add some natural randomness
+            if (Math.random() < 0.15) { // 15% chance of variation
+                colorIndex = Math.max(0, Math.min(7, colorIndex + (Math.random() > 0.5 ? 1 : -1)));
+            }
+
+            const baseColor = baseColors[Math.min(colorIndex, baseColors.length - 1)];
+
+            // Apply noise-based variation
+            const terrainVariation = (combinedNoise - 0.5) * 30; // ±15
+            const detailVariation = (detailNoise - 0.5) * 15; // ±7.5
+            const randomVariation = (Math.random() - 0.5) * 10; // ±5
+
+            // Calculate final RGB values
+            const r = Math.max(0, Math.min(255, baseColor[0] + terrainVariation + detailVariation + randomVariation)) / 255;
+            const g = Math.max(0, Math.min(255, baseColor[1] + terrainVariation + detailVariation + randomVariation)) / 255;
+            const b = Math.max(0, Math.min(255, baseColor[2] + terrainVariation + detailVariation + randomVariation)) / 255;
+
+            // Add to colors array (RGB values 0-1 for Three.js)
+            colors.push(r, g, b);
+        }
+
+        // Set vertex colors on geometry
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.attributes.color.needsUpdate = true;
+
+        console.log('Applied vertex noise coloring - no tiling, truly unique across entire map!');
     }
 
     createGroundTexture() {
