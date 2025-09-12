@@ -128,6 +128,18 @@ class Game3D {
         this.cameraLookAtTarget = null; // For smooth camera look-at interpolation
         this.lastTime = 0; // For delta time calculations
 
+        // Zoom system
+        this.baseFrustumSize = 50; // Base orthographic camera size
+        this.currentZoom = 1.0; // Current zoom level (1.0 = normal)
+        this.minZoom = 0.3; // Minimum zoom (zoomed in)
+        this.maxZoom = 3.0; // Maximum zoom (zoomed out)
+        this.zoomSpeed = 0.1; // Zoom speed multiplier
+
+        // Touch zoom variables
+        this.touchZoomEnabled = false;
+        this.initialTouchDistance = 0;
+        this.initialZoom = 1.0;
+
         // Pathfinding state
         this.pathPoints = [];
         this.currentPathIndex = 0;
@@ -142,15 +154,15 @@ class Game3D {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x87CEEB); // Sky blue
 
-        // Isometric Camera setup (Orthographic)
+        // Isometric Camera setup (Orthographic) with zoom support
         const aspect = window.innerWidth / window.innerHeight;
-        const frustumSize = 50;
+        this.updateCameraZoom(); // Initialize camera with zoom
 
         this.camera = new THREE.OrthographicCamera(
-            frustumSize * aspect / -2,
-            frustumSize * aspect / 2,
-            frustumSize / 2,
-            frustumSize / -2,
+            this.baseFrustumSize * aspect / -2,
+            this.baseFrustumSize * aspect / 2,
+            this.baseFrustumSize / 2,
+            this.baseFrustumSize / -2,
             1,    // Increased near clipping plane
             1000
         );
@@ -679,6 +691,39 @@ class Game3D {
 
         document.addEventListener('touchend', (event) => {
             event.preventDefault();
+        }, { passive: false });
+
+        // Mouse wheel zoom (like WoW)
+        canvas.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 0.1 : -0.1;
+            this.setZoom(this.currentZoom + delta);
+        }, { passive: false });
+
+        // Touch zoom for mobile (pinch-to-zoom)
+        canvas.addEventListener('touchstart', (event) => {
+            if (event.touches.length === 2) {
+                event.preventDefault();
+                this.touchZoomEnabled = true;
+                this.initialTouchDistance = this.getTouchDistance(event.touches[0], event.touches[1]);
+                this.initialZoom = this.currentZoom;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (event) => {
+            if (this.touchZoomEnabled && event.touches.length === 2) {
+                event.preventDefault();
+                const currentDistance = this.getTouchDistance(event.touches[0], event.touches[1]);
+                const zoomFactor = currentDistance / this.initialTouchDistance;
+                const newZoom = this.initialZoom / zoomFactor;
+                this.setZoom(newZoom);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (event) => {
+            if (event.touches.length < 2) {
+                this.touchZoomEnabled = false;
+            }
         }, { passive: false });
 
         // No keyboard movement - only click to move
@@ -1282,6 +1327,44 @@ class Game3D {
         this.camera.lookAt(this.cameraLookAtTarget);
     }
 
+    // Zoom system methods
+    setZoom(zoomLevel) {
+        // Clamp zoom level within bounds
+        this.currentZoom = Math.max(this.minZoom, Math.min(this.maxZoom, zoomLevel));
+
+        // Update camera frustum size
+        this.updateCameraZoom();
+    }
+
+    zoomIn(delta = 0.1) {
+        this.setZoom(this.currentZoom - delta);
+    }
+
+    zoomOut(delta = 0.1) {
+        this.setZoom(this.currentZoom + delta);
+    }
+
+    updateCameraZoom() {
+        if (!this.camera) return;
+
+        const aspect = window.innerWidth / window.innerHeight;
+        const frustumSize = this.baseFrustumSize * this.currentZoom;
+
+        this.camera.left = frustumSize * aspect / -2;
+        this.camera.right = frustumSize * aspect / 2;
+        this.camera.top = frustumSize / 2;
+        this.camera.bottom = frustumSize / -2;
+
+        this.camera.updateProjectionMatrix();
+    }
+
+    // Calculate distance between two touch points
+    getTouchDistance(touch1, touch2) {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     checkCollisions(position) {
         const playerRadius = 1; // Player collision radius
 
@@ -1593,14 +1676,8 @@ class Game3D {
     // Removed updateHUD - no player stats modal to update
 
     onWindowResize() {
-        const aspect = window.innerWidth / window.innerHeight;
-        const frustumSize = 50;
-
-        this.camera.left = frustumSize * aspect / -2;
-        this.camera.right = frustumSize * aspect / 2;
-        this.camera.top = frustumSize / 2;
-        this.camera.bottom = frustumSize / -2;
-        this.camera.updateProjectionMatrix();
+        // Update camera zoom to maintain current zoom level with new aspect ratio
+        this.updateCameraZoom();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
