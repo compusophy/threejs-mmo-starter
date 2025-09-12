@@ -256,15 +256,9 @@ class Game3D {
 
         // Player character group with realistic human proportions
         this.player = new THREE.Group();
-        // Position player so feet are exactly on ground
-        // Full leg length from hip to foot: thigh(0.486) + calf(0.437) + foot(0.04) = 0.963
-        // But feet are positioned relative to hip, and hip is at torso bottom
-        // So feet are at: hip_y - legLength = (torsoHeight/2) - legLength
-        // To put feet at Y=0: player_y = legLength - torsoHeight/2
-        const feetToHipDistance = (legLength * 0.5) + (legLength * 0.45) + 0.04; // 0.963
-        const hipToPlayerOrigin = torsoHeight / 2; // 0.288
-        const correctPlayerY = feetToHipDistance - hipToPlayerOrigin; // 0.963 - 0.288 = 0.675
-        this.player.position.set(0, correctPlayerY, 0); // Feet at ground level
+        // Position player so feet are exactly on ground level (Y=0)
+        // The ground plane is at Y=0, so feet should be at Y=0
+        this.player.position.set(0, 0, 0); // Feet at ground level
 
         // Colors for different body parts
         const skinColor = 0xFFDBAC;
@@ -887,8 +881,8 @@ class Game3D {
         // Reset head stabilization
         this.head.rotation.z = 0;
 
-        // Reset vertical position (no bob when standing still)
-        this.player.position.y = 0.675; // Base standing height with feet on ground
+        // Reset vertical position (feet on ground level)
+        this.player.position.y = 0; // Feet at ground level (Y=0)
     }
 
     updateCamera() {
