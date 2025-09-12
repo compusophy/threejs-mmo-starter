@@ -881,9 +881,16 @@ class Game3D {
 
         // Check collision with world boundaries and trees before applying movement
         const newPosition = this.player.position.clone().add(moveVector);
-        if (this.checkWorldBoundaries(newPosition) && this.checkTreeCollisions(newPosition)) {
+
+        const boundaryCheck = this.checkWorldBoundaries(newPosition);
+        const treeCheck = this.checkTreeCollisions(newPosition);
+
+        if (boundaryCheck && treeCheck) {
             // Apply smooth movement if no collision
             this.player.position.add(moveVector);
+        } else {
+            if (!boundaryCheck) console.log('Blocked by world boundary');
+            if (!treeCheck) console.log('Blocked by tree collision');
         }
 
         // Smooth player rotation to face movement direction
@@ -1041,15 +1048,20 @@ class Game3D {
     calculatePath(startPos, targetPos) {
         // First, try direct path
         if (this.checkDirectPath(startPos, targetPos)) {
+            console.log('Direct path clear');
             return [targetPos.clone()];
         }
 
-        // If direct path is blocked, find a detour around the nearest tree
+        console.log('Direct path blocked, finding detour...');
+
+        // If direct path is blocked, find a detour around blocking trees
         const detourPoint = this.findDetourPoint(startPos, targetPos);
         if (detourPoint) {
+            console.log('Found detour at:', detourPoint.x.toFixed(2), detourPoint.z.toFixed(2));
             return [detourPoint, targetPos.clone()];
         }
 
+        console.log('No detour found - target may be unreachable');
         // If no detour found, return empty path (can't reach target)
         return [];
     }
@@ -1061,7 +1073,11 @@ class Game3D {
             .normalize();
 
         const distance = startPos.distanceTo(targetPos);
-        const steps = Math.max(5, Math.floor(distance / 2)); // Check multiple points along the path
+
+        // If distance is very small, consider it clear
+        if (distance < 0.5) return true;
+
+        const steps = Math.max(8, Math.floor(distance / 1.5)); // More thorough checking
 
         for (let i = 1; i <= steps; i++) {
             const t = i / steps;
@@ -1078,62 +1094,32 @@ class Game3D {
     }
 
     findDetourPoint(startPos, targetPos) {
-        // Find the tree that's blocking the direct path
-        const blockingTree = this.findNearestBlockingTree(startPos, targetPos);
-        if (!blockingTree) return null;
+        // Find all trees that might be blocking the path
+        const blockingTrees = this.findAllBlockingTrees(startPos, targetPos);
 
-        // Calculate detour points around the tree
-        const treePos = new THREE.Vector3(blockingTree.x, 0, blockingTree.z);
-        const trunkRadius = 1.2; // Same as collision radius
-        const detourDistance = trunkRadius + 2; // Go around the trunk (smaller detour)
+        if (blockingTrees.length === 0) return null;
 
-        // Try several detour directions
-        const directions = [
-            new THREE.Vector3(1, 0, 0),   // Right
-            new THREE.Vector3(-1, 0, 0),  // Left
-            new THREE.Vector3(0, 0, 1),   // Forward
-            new THREE.Vector3(0, 0, -1),  // Back
-            new THREE.Vector3(0.7, 0, 0.7),  // Diagonal
-            new THREE.Vector3(-0.7, 0, 0.7),
-            new THREE.Vector3(0.7, 0, -0.7),
-            new THREE.Vector3(-0.7, 0, -0.7)
-        ];
-
-        let bestDetour = null;
-        let bestDistance = Infinity;
-
-        for (const dir of directions) {
-            const detourPoint = new THREE.Vector3()
-                .copy(treePos)
-                .add(dir.clone().multiplyScalar(detourDistance));
-
-            // Check if this detour point is reachable and closer to target
-            if (this.checkDirectPath(startPos, detourPoint) &&
-                this.checkDirectPath(detourPoint, targetPos)) {
-
-                const detourToTarget = detourPoint.distanceTo(targetPos);
-                if (detourToTarget < bestDistance) {
-                    bestDistance = detourToTarget;
-                    bestDetour = detourPoint;
-                }
+        // For each blocking tree, try to find a good detour
+        for (const treePos of blockingTrees) {
+            const detour = this.calculateTreeDetour(startPos, targetPos, treePos);
+            if (detour) {
+                return detour;
             }
         }
 
-        return bestDetour;
+        // If no good detour found around individual trees, try a more aggressive approach
+        return this.findAggressiveDetour(startPos, targetPos);
     }
 
-    findNearestBlockingTree(startPos, targetPos) {
-        if (!this.treePositions) return null;
-
+    findAllBlockingTrees(startPos, targetPos) {
+        const blockingTrees = [];
         const direction = new THREE.Vector3()
             .subVectors(targetPos, startPos)
             .normalize();
 
         const distance = startPos.distanceTo(targetPos);
-        let nearestTree = null;
-        let nearestDistance = Infinity;
 
-        // Check all trees to find which one is blocking the path
+        // Check all trees to see which ones intersect the path
         for (const treePos of this.treePositions) {
             // Project tree position onto the path line
             const toTree = new THREE.Vector3(treePos.x - startPos.x, 0, treePos.z - startPos.z);
@@ -1148,17 +1134,97 @@ class Game3D {
                 Math.pow(treePos.z - projectedPoint.z, 2)
             );
 
-            if (treeToPath < 2.5 && projection > 0 && projection < distance) {
-                const distToStart = projectedPoint.distanceTo(startPos);
-                if (distToStart < nearestDistance) {
-                    nearestDistance = distToStart;
-                    nearestTree = treePos;
+            // Include tree if it's within 3 units of path and in the path direction
+            if (treeToPath < 3 && projection > 0 && projection < distance) {
+                blockingTrees.push(treePos);
+            }
+        }
+
+        return blockingTrees;
+    }
+
+    calculateTreeDetour(startPos, targetPos, treePos) {
+        const treeVector = new THREE.Vector3(treePos.x, 0, treePos.z);
+        const trunkRadius = 1.2;
+        const detourDistance = trunkRadius + 2.5; // Slightly larger detour
+
+        // Calculate the direction from start to target
+        const pathDirection = new THREE.Vector3()
+            .subVectors(targetPos, startPos)
+            .normalize();
+
+        // Calculate perpendicular directions for detour
+        const perpendicular = new THREE.Vector3(-pathDirection.z, 0, pathDirection.x);
+
+        // Try both directions around the tree
+        const detourDirections = [
+            perpendicular.clone(),
+            perpendicular.clone().negate()
+        ];
+
+        let bestDetour = null;
+        let bestScore = Infinity;
+
+        for (const dir of detourDirections) {
+            // Calculate detour point
+            const detourPoint = new THREE.Vector3()
+                .copy(treeVector)
+                .add(dir.clone().multiplyScalar(detourDistance));
+
+            // Check if this detour is viable
+            if (this.checkDirectPath(startPos, detourPoint) &&
+                this.checkDirectPath(detourPoint, targetPos)) {
+
+                // Calculate a score based on path efficiency
+                const detourDistanceTotal = startPos.distanceTo(detourPoint) + detourPoint.distanceTo(targetPos);
+                const directDistance = startPos.distanceTo(targetPos);
+                const efficiencyScore = detourDistanceTotal / directDistance;
+
+                // Prefer detours that are reasonably efficient (not too much longer than direct path)
+                if (efficiencyScore < 2.0 && efficiencyScore < bestScore) {
+                    bestScore = efficiencyScore;
+                    bestDetour = detourPoint;
                 }
             }
         }
 
-        return nearestTree;
+        return bestDetour;
     }
+
+    findAggressiveDetour(startPos, targetPos) {
+        // More aggressive detour: try larger detour distances and more angles
+        const detourDistances = [3, 4, 5]; // Increasing detour distances
+        const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]; // More angles
+
+        let bestDetour = null;
+        let bestScore = Infinity;
+
+        for (const distance of detourDistances) {
+            for (const angle of angles) {
+                const radians = (angle * Math.PI) / 180;
+                const detourPoint = new THREE.Vector3(
+                    startPos.x + Math.cos(radians) * distance,
+                    0,
+                    startPos.z + Math.sin(radians) * distance
+                );
+
+                // Check if this detour leads to the target
+                if (this.checkDirectPath(detourPoint, targetPos)) {
+                    const detourDistanceTotal = startPos.distanceTo(detourPoint) + detourPoint.distanceTo(targetPos);
+                    const directDistance = startPos.distanceTo(targetPos);
+                    const efficiencyScore = detourDistanceTotal / directDistance;
+
+                    if (efficiencyScore < bestScore) {
+                        bestScore = efficiencyScore;
+                        bestDetour = detourPoint;
+                    }
+                }
+            }
+        }
+
+        return bestDetour;
+    }
+
 
     setPathMovement(pathPoints) {
         this.pathPoints = pathPoints;
