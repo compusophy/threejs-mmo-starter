@@ -219,13 +219,16 @@ class Game3D {
     }
 
     createWorld() {
-        // Ground plane with isometric grid (larger and properly positioned)
+        // Ground plane with enhanced procedural texture
         const groundGeometry = new THREE.PlaneGeometry(200, 200);
+
+        // Create enhanced procedural texture
+        const groundTexture = this.createGroundTexture();
         const groundMaterial = new THREE.MeshLambertMaterial({
-            color: 0x8B4513,
-            transparent: true,
-            opacity: 0.9
+            map: groundTexture,
+            transparent: false // No transparency needed with texture
         });
+
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = 0; // Ground at Y=0 for top-down view
@@ -247,45 +250,104 @@ class Game3D {
     }
 
     createGroundTexture() {
-        console.log('Creating simple brown texture...');
+        console.log('Creating enhanced procedural ground texture...');
 
-        // Create a simple solid brown texture first to test
         const canvas = document.createElement('canvas');
-        const size = 64; // Small size for testing
+        const size = 128; // Higher resolution for better detail
         canvas.width = size;
         canvas.height = size;
 
         const ctx = canvas.getContext('2d');
-        console.log('Canvas created:', canvas, 'Context:', ctx);
 
         if (!ctx) {
             console.error('Failed to get 2D context');
             return this.createFallbackTexture();
         }
 
-        // Fill with lighter brown color for better visibility
-        ctx.fillStyle = '#CD853F'; // Peru (lighter brown)
-        ctx.fillRect(0, 0, size, size);
+        // Create image data for pixel-level manipulation
+        const imageData = ctx.createImageData(size, size);
+        const data = imageData.data;
 
-        // Add some variation with slightly darker brown
-        ctx.fillStyle = '#BC8F8F'; // Rosy brown
-        for (let i = 0; i < 20; i++) {
+        // Base colors for different ground types
+        const baseColors = [
+            [205, 133, 63],   // Peru (sandy brown)
+            [188, 143, 143],  // Rosy brown
+            [160, 82, 45],    // Sienna
+            [139, 69, 19],    // Saddle brown
+            [222, 184, 135],  // Burlywood (lighter)
+        ];
+
+        // Simple noise function (pseudo-Perlin-like)
+        const noise = (x, y, scale = 0.1) => {
+            const n = Math.sin(x * scale) * Math.cos(y * scale) +
+                     Math.sin(x * scale * 2.3) * Math.cos(y * scale * 1.7) * 0.5 +
+                     Math.sin(x * scale * 4.1) * Math.cos(y * scale * 3.2) * 0.25;
+            return (n + 1) / 2; // Normalize to 0-1
+        };
+
+        // Generate texture pixel by pixel
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const pixelIndex = (y * size + x) * 4;
+
+                // Multiple noise layers for complexity
+                const noise1 = noise(x, y, 0.05);
+                const noise2 = noise(x, y, 0.15);
+                const noise3 = noise(x, y, 0.3);
+
+                // Combine noises with different weights
+                const combinedNoise = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
+
+                // Add some random speckles
+                const speckle = Math.random() * 0.2;
+
+                // Select base color based on noise
+                const colorIndex = Math.floor(combinedNoise * baseColors.length);
+                const baseColor = baseColors[Math.min(colorIndex, baseColors.length - 1)];
+
+                // Apply noise variation and speckles
+                const variation = (combinedNoise - 0.5) * 40; // ±20 variation
+                const speckleVariation = (speckle - 0.1) * 30; // Subtle speckles
+
+                // Calculate final RGB values with clamping
+                const r = Math.max(0, Math.min(255, baseColor[0] + variation + speckleVariation));
+                const g = Math.max(0, Math.min(255, baseColor[1] + variation + speckleVariation));
+                const b = Math.max(0, Math.min(255, baseColor[2] + variation + speckleVariation));
+
+                // Set pixel data
+                data[pixelIndex] = r;     // Red
+                data[pixelIndex + 1] = g; // Green
+                data[pixelIndex + 2] = b; // Blue
+                data[pixelIndex + 3] = 255; // Alpha (fully opaque)
+            }
+        }
+
+        // Put the image data on the canvas
+        ctx.putImageData(imageData, 0, 0);
+
+        // Add some subtle grass-like details
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.fillStyle = 'rgba(34, 139, 34, 0.1)'; // Dark green with low opacity
+
+        // Add small green patches for grass effect
+        for (let i = 0; i < 15; i++) {
             const x = Math.random() * size;
             const y = Math.random() * size;
-            const w = Math.random() * 8 + 2;
-            const h = Math.random() * 8 + 2;
-            ctx.fillRect(x, y, w, h);
+            const radius = Math.random() * 3 + 1;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         const texture = new THREE.CanvasTexture(canvas);
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(8, 8); // More repeats for testing
-        texture.generateMipmaps = false;
+        texture.repeat.set(12, 12); // More repeats for larger texture coverage
+        texture.generateMipmaps = true; // Enable mipmaps for better performance
 
-        console.log('Simple brown texture created:', texture);
+        console.log('Enhanced procedural ground texture created:', texture);
         return texture;
-
     }
 
     addTerrainHeightVariation(geometry) {
