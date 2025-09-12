@@ -557,11 +557,11 @@ class Game3D {
             const targetPos = intersects[0].point;
             console.log('Target position:', targetPos.x, targetPos.y, targetPos.z);
 
-                // Check if we can path to the target (may need to detour around trees)
+            // Always allow clicking - let pathfinding handle obstacles (like League of Legends)
             const pathPoints = this.calculatePath(this.player.position, targetPos);
             if (pathPoints.length === 0) {
-                console.log('Cannot find path to position - blocked by trees');
-                // Still show click effect but don't set movement target
+                console.log('Cannot find any path to position - completely surrounded');
+                // Only block if absolutely no path exists
                 this.showClickEffect(targetPos);
                 return;
             }
@@ -579,10 +579,10 @@ class Game3D {
                 this.mouse.y * 50
             );
 
-            // Check if we can path to the fallback position
+            // Always allow clicking fallback - let pathfinding handle obstacles
             const fallbackPath = this.calculatePath(this.player.position, fallbackPos);
             if (fallbackPath.length === 0) {
-                console.log('Cannot find path to fallback position - blocked by trees');
+                console.log('Cannot find any path to fallback position - completely surrounded');
                 this.showClickEffect(fallbackPos);
                 return;
             }
@@ -1018,7 +1018,7 @@ class Game3D {
 
         const playerRadius = 1; // Player collision radius
 
-        // Check collision with each tree
+        // Check collision with each tree trunk (not leaves)
         for (let i = 0; i < this.treePositions.length; i++) {
             const treePos = this.treePositions[i];
             const distance = Math.sqrt(
@@ -1026,15 +1026,15 @@ class Game3D {
                 Math.pow(position.z - treePos.z, 2)
             );
 
-            // Use tree collision radius from userData (default to 2.5 if not set)
-            const treeRadius = 2.5; // Conservative collision radius for trees
+            // Only collide with tree trunk (smaller radius)
+            const trunkRadius = 1.2; // Much smaller - only the actual trunk
 
-            if (distance < playerRadius + treeRadius) {
-                return false; // Collision detected, don't allow movement
+            if (distance < playerRadius + trunkRadius) {
+                return false; // Collision with trunk detected, don't allow movement
             }
         }
 
-        return true; // No collision with trees, allow movement
+        return true; // No collision with tree trunks, allow movement
     }
 
     // Pathfinding methods for avoiding trees
@@ -1084,8 +1084,8 @@ class Game3D {
 
         // Calculate detour points around the tree
         const treePos = new THREE.Vector3(blockingTree.x, 0, blockingTree.z);
-        const treeRadius = 2.5; // Same as collision radius
-        const detourDistance = treeRadius + 3; // Go around the tree
+        const trunkRadius = 1.2; // Same as collision radius
+        const detourDistance = trunkRadius + 2; // Go around the trunk (smaller detour)
 
         // Try several detour directions
         const directions = [
@@ -1148,7 +1148,7 @@ class Game3D {
                 Math.pow(treePos.z - projectedPoint.z, 2)
             );
 
-            if (treeToPath < 4 && projection > 0 && projection < distance) {
+            if (treeToPath < 2.5 && projection > 0 && projection < distance) {
                 const distToStart = projectedPoint.distanceTo(startPos);
                 if (distToStart < nearestDistance) {
                     nearestDistance = distToStart;
