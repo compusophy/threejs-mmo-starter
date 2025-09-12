@@ -165,22 +165,23 @@ class Game3D {
             this.baseFrustumSize * aspect / 2,
             this.baseFrustumSize / 2,
             this.baseFrustumSize / -2,
-            1,    // Increased near clipping plane
-            1000
+            0.5,  // Adjusted near clipping plane to prevent z-fighting
+            800   // Reduced far clipping plane for better depth precision
         );
 
         // ISOMETRIC CAMERA: View from south at an angle
         this.camera.position.set(0, 45, 45); // Position south of origin, elevated
         this.camera.lookAt(0, 0, 0); // Looking at origin from isometric angle
 
-        // Renderer setup
+        // Renderer setup - optimized for mobile performance
         this.renderer = new THREE.WebGLRenderer({
             canvas: document.getElementById('game-canvas'),
-            antialias: true
+            antialias: window.innerWidth > 768, // Disable antialiasing on mobile for performance
+            powerPreference: "high-performance" // Prefer high-performance GPU
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.shadowMap.type = THREE.BasicShadowMap; // Simpler shadow mapping for mobile
 
         // Lighting
         this.setupLighting();
@@ -203,22 +204,24 @@ class Game3D {
         const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
         this.scene.add(ambientLight);
 
-        // Directional light (sun) - angled for isometric feel, repositioned to reduce edge shadows
+        // Directional light (sun) - optimized for mobile performance
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(50, 60, 10); // Moved more to the side and higher to reduce edge shadows
         directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        directionalLight.shadow.camera.near = 0.5;
-        directionalLight.shadow.camera.far = 500;
-        directionalLight.shadow.camera.left = -120; // Extended slightly to cover walls
-        directionalLight.shadow.camera.right = 120;
-        directionalLight.shadow.camera.top = 120;
-        directionalLight.shadow.camera.bottom = -120;
 
-        // Reduce shadow harshness
-        directionalLight.shadow.bias = -0.0001; // Small bias to reduce shadow acne
-        directionalLight.shadow.radius = 2; // Soft shadows
+        // Reduce shadow map size for mobile performance
+        directionalLight.shadow.mapSize.width = 1024;
+        directionalLight.shadow.mapSize.height = 1024;
+        directionalLight.shadow.camera.near = 1; // Prevent z-fighting
+        directionalLight.shadow.camera.far = 300; // Reduced far plane
+        directionalLight.shadow.camera.left = -100; // Smaller shadow area
+        directionalLight.shadow.camera.right = 100;
+        directionalLight.shadow.camera.top = 100;
+        directionalLight.shadow.camera.bottom = -100;
+
+        // Optimize shadow settings for mobile
+        directionalLight.shadow.bias = -0.0005; // Adjusted bias for mobile
+        directionalLight.shadow.radius = 1.5; // Slightly softer shadows
         this.scene.add(directionalLight);
 
         // Add fog for atmospheric depth
@@ -226,8 +229,8 @@ class Game3D {
     }
 
     createWorld() {
-        // Ground plane with vertex-based procedural coloring (no tiling!)
-        const groundGeometry = new THREE.PlaneGeometry(200, 200, 100, 100); // Higher subdivision for smoother noise
+        // Ground plane with optimized geometry for mobile performance
+        const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50); // Reduced subdivision for mobile
 
         // Create high-resolution procedural texture instead of vertex colors
         const groundTexture = this.createGroundTexture(1024); // Much higher resolution!
