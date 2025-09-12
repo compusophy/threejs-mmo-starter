@@ -222,11 +222,11 @@ class Game3D {
         // Ground plane with vertex-based procedural coloring (no tiling!)
         const groundGeometry = new THREE.PlaneGeometry(200, 200, 100, 100); // Higher subdivision for smoother noise
 
-        // Apply vertex-based noise coloring instead of texture
-        this.applyVertexNoiseColoring(groundGeometry);
+        // Create high-resolution procedural texture instead of vertex colors
+        const groundTexture = this.createGroundTexture(1024); // Much higher resolution!
 
         const groundMaterial = new THREE.MeshLambertMaterial({
-            vertexColors: true, // Use vertex colors instead of texture
+            map: groundTexture,
             transparent: false
         });
 
@@ -485,11 +485,10 @@ class Game3D {
         console.log('Applied vertex noise coloring - no tiling, truly unique across entire map!');
     }
 
-    createGroundTexture() {
-        console.log('Creating enhanced procedural ground texture...');
+    createGroundTexture(size = 1024) {
+        console.log(`Creating high-resolution procedural ground texture (${size}x${size})...`);
 
         const canvas = document.createElement('canvas');
-        const size = 256; // Higher resolution for smoother tiling
         canvas.width = size;
         canvas.height = size;
 
@@ -522,11 +521,11 @@ class Game3D {
             for (let x = 0; x < size; x++) {
                 const pixelIndex = (y * size + x) * 4;
 
-                // Multiple organic noise layers for Age of Empires-style terrain
-                const terrainNoise = this.noise(x, y, 0);      // Main terrain variation
-                const detailNoise = this.noise(x, y, 1000);    // Fine details
-                const colorNoise = this.noise(x, y, 2000);     // Color variation
-                const textureNoise = this.noise(x, y, 3000);   // Texture pattern
+                // Multiple organic noise layers for high-resolution grass terrain
+                const terrainNoise = this.noise(x * 0.01, y * 0.01, 0);      // Main terrain variation
+                const detailNoise = this.noise(x * 0.02, y * 0.02, 1000);    // Fine details
+                const colorNoise = this.noise(x * 0.04, y * 0.04, 2000);     // Color variation
+                const textureNoise = this.noise(x * 0.08, y * 0.08, 3000);   // Texture pattern
 
                 // Combine with organic weights for natural appearance
                 const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.1 + textureNoise * 0.05;
@@ -619,7 +618,7 @@ class Game3D {
         const texture = new THREE.CanvasTexture(canvas);
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(8, 8); // Adjusted for larger texture size
+        texture.repeat.set(1, 1); // Single tile for full detail visibility
         texture.generateMipmaps = true; // Enable mipmaps for better performance
 
         console.log('Enhanced procedural ground texture created:', texture);
