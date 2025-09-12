@@ -181,7 +181,7 @@ class Game3D {
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.BasicShadowMap; // Simpler shadow mapping for mobile
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // High quality soft shadows
 
         // Lighting
         this.setupLighting();
@@ -209,19 +209,19 @@ class Game3D {
         directionalLight.position.set(50, 60, 10); // Moved more to the side and higher to reduce edge shadows
         directionalLight.castShadow = true;
 
-        // Reduce shadow map size for mobile performance
-        directionalLight.shadow.mapSize.width = 1024;
-        directionalLight.shadow.mapSize.height = 1024;
-        directionalLight.shadow.camera.near = 1; // Prevent z-fighting
-        directionalLight.shadow.camera.far = 300; // Reduced far plane
-        directionalLight.shadow.camera.left = -100; // Smaller shadow area
-        directionalLight.shadow.camera.right = 100;
-        directionalLight.shadow.camera.top = 100;
-        directionalLight.shadow.camera.bottom = -100;
+        // High quality shadow mapping
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5; // Prevent z-fighting
+        directionalLight.shadow.camera.far = 400; // Good shadow distance
+        directionalLight.shadow.camera.left = -120; // Larger shadow area for quality
+        directionalLight.shadow.camera.right = 120;
+        directionalLight.shadow.camera.top = 120;
+        directionalLight.shadow.camera.bottom = -120;
 
-        // Optimize shadow settings for mobile
-        directionalLight.shadow.bias = -0.0005; // Adjusted bias for mobile
-        directionalLight.shadow.radius = 1.5; // Slightly softer shadows
+        // High quality shadow settings
+        directionalLight.shadow.bias = -0.0001; // Fine-tuned bias for quality
+        directionalLight.shadow.radius = 2; // Softer, higher quality shadows
         this.scene.add(directionalLight);
 
         // Add fog for atmospheric depth
