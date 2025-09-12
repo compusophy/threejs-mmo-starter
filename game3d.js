@@ -1170,9 +1170,10 @@ class Game3D {
                 break;
 
             case 'birds-eye':
-                // BIRD'S EYE: High above, looking straight down
-                this.camera.position.set(0, 80, 0); // High above center
-                this.camera.lookAt(0, 0, 0); // Look straight down
+                // BIRD'S EYE: High above player, looking straight down
+                const playerPos = this.player.position.clone();
+                this.camera.position.set(playerPos.x, 80, playerPos.z); // High above player
+                this.camera.lookAt(playerPos.x, 0, playerPos.z); // Look straight down at player
                 break;
         }
 
@@ -1876,9 +1877,10 @@ class Game3D {
             this.camera.position.set(playerPos.x, playerPos.y + 1.7, playerPos.z - 2);
             this.camera.lookAt(playerPos.x, playerPos.y + 1.7, playerPos.z + 10);
         } else if (this.currentCameraMode === 'birds-eye') {
-            // BIRD'S EYE: Stay high above center
-            this.camera.position.set(0, 80, 0);
-            this.camera.lookAt(0, 0, 0);
+            // BIRD'S EYE: Follow player from high above
+            const playerPos = this.player.position.clone();
+            this.camera.position.set(playerPos.x, 80, playerPos.z);
+            this.camera.lookAt(playerPos.x, 0, playerPos.z);
         }
     }
 
