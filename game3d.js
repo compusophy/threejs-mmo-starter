@@ -1118,7 +1118,6 @@ class Game3D {
             </div>
             <div class="camera-controls">
                 <button class="camera-btn active" id="isometric-btn" title="Isometric View">📐</button>
-                <button class="camera-btn" id="first-person-btn" title="First Person View">👁️</button>
                 <button class="camera-btn" id="birds-eye-btn" title="Bird's Eye View">🦅</button>
             </div>
         `;
@@ -1130,7 +1129,6 @@ class Game3D {
 
     setupCameraControls() {
         const isometricBtn = document.getElementById('isometric-btn');
-        const firstPersonBtn = document.getElementById('first-person-btn');
         const birdsEyeBtn = document.getElementById('birds-eye-btn');
 
         // Current camera mode tracking
@@ -1139,11 +1137,6 @@ class Game3D {
         isometricBtn.addEventListener('click', () => {
             this.setCameraMode('isometric');
             this.updateCameraButtons('isometric');
-        });
-
-        firstPersonBtn.addEventListener('click', () => {
-            this.setCameraMode('first-person');
-            this.updateCameraButtons('first-person');
         });
 
         birdsEyeBtn.addEventListener('click', () => {
@@ -1162,12 +1155,6 @@ class Game3D {
                 this.camera.lookAt(0, 0, 0); // Looking at origin from isometric angle
                 break;
 
-            case 'first-person':
-                // FIRST PERSON: Behind the player, eye-level
-                const playerPos = this.player.position.clone();
-                this.camera.position.set(playerPos.x, playerPos.y + 1.7, playerPos.z - 2); // Behind player
-                this.camera.lookAt(playerPos.x, playerPos.y + 1.7, playerPos.z + 10); // Look ahead
-                break;
 
             case 'birds-eye':
                 // BIRD'S EYE: High above player, looking straight down
@@ -1871,11 +1858,6 @@ class Game3D {
 
             // Apply smooth look-at
             this.camera.lookAt(this.cameraLookAtTarget);
-        } else if (this.currentCameraMode === 'first-person') {
-            // FIRST PERSON: Keep camera behind player
-            const playerPos = this.player.position.clone();
-            this.camera.position.set(playerPos.x, playerPos.y + 1.7, playerPos.z - 2);
-            this.camera.lookAt(playerPos.x, playerPos.y + 1.7, playerPos.z + 10);
         } else if (this.currentCameraMode === 'birds-eye') {
             // BIRD'S EYE: Follow player from high above
             const playerPos = this.player.position.clone();
