@@ -444,23 +444,22 @@ class Game3D {
             // Combine noises with organic weights
             const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.15;
 
-            // Select color based on terrain type - heavily biased towards greens
+            // Smooth color blending for natural appearance - no hard bands
             let colorIndex;
-            if (terrainNoise < 0.15) {
-                // Darker grass areas (rare, for variety)
-                colorIndex = Math.floor(terrainNoise * 2); // Colors 0-1 (darker greens)
-            } else if (terrainNoise < 0.8) {
-                // Main grassland areas (most common - 65% of area)
-                colorIndex = 2 + Math.floor((terrainNoise - 0.15) * 4); // Colors 2-5 (medium greens)
-            } else {
-                // Bright, vibrant grass areas (for highlights)
-                colorIndex = 6 + Math.floor((terrainNoise - 0.8) * 2); // Colors 6-7 (bright greens)
-            }
 
-            // Add some natural randomness
-            if (Math.random() < 0.15) { // 15% chance of variation
-                colorIndex = Math.max(0, Math.min(7, colorIndex + (Math.random() > 0.5 ? 1 : -1)));
-            }
+            // Use smooth interpolation between colors based on noise
+            const smoothNoise = (terrainNoise + detailNoise * 0.3 + colorNoise * 0.2) / 1.5;
+
+            // Map smooth noise to color range with natural blending
+            colorIndex = Math.floor(smoothNoise * 8); // 0-7 range
+
+            // Add significant random variation to break up any patterns
+            const randomOffset = (Math.random() - 0.5) * 3; // ±1.5 variation
+            colorIndex = Math.max(0, Math.min(7, colorIndex + randomOffset));
+
+            // Additional noise-based variation for even more natural look
+            const microVariation = (colorNoise - 0.5) * 2; // ±1
+            colorIndex = Math.max(0, Math.min(7, Math.floor(colorIndex + microVariation)));
 
             const baseColor = baseColors[Math.min(colorIndex, baseColors.length - 1)];
 
@@ -530,28 +529,25 @@ class Game3D {
                 // Combine with organic weights for natural appearance
                 const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.1 + textureNoise * 0.05;
 
-                // Add organic variation (less random speckles, more natural)
-                const organicVariation = (Math.random() - 0.5) * 0.15;
+                // Add organic variation (more natural randomness to break patterns)
+                const organicVariation = (Math.random() - 0.5) * 0.25;
 
-                // Organic color selection based on terrain characteristics
+                // Smooth color blending for natural appearance - no hard bands
                 let colorIndex;
 
-                // Use noise to determine terrain type more naturally
-                if (terrainNoise < 0.35) {
-                    // Dark forest/soil areas
-                    colorIndex = Math.floor(terrainNoise * 3); // Colors 0-2 (dark browns)
-                } else if (terrainNoise < 0.65) {
-                    // Mixed forest/meadow
-                    colorIndex = 2 + Math.floor((terrainNoise - 0.35) * 4); // Colors 2-5 (transitional)
-                } else {
-                    // Bright meadow/grass areas
-                    colorIndex = 5 + Math.floor((terrainNoise - 0.65) * 3); // Colors 5-7 (bright greens)
-                }
+                // Use smooth interpolation between colors based on noise
+                const smoothNoise = (terrainNoise + detailNoise * 0.3 + colorNoise * 0.2) / 1.5;
 
-                // Add some randomness for natural variation
-                if (Math.random() < 0.1) { // 10% chance of color variation
-                    colorIndex = Math.max(0, Math.min(7, colorIndex + (Math.random() > 0.5 ? 1 : -1)));
-                }
+                // Map smooth noise to color range with natural blending
+                colorIndex = Math.floor(smoothNoise * 8); // 0-7 range
+
+                // Add significant random variation to break up any patterns
+                const randomOffset = (Math.random() - 0.5) * 3; // ±1.5 variation
+                colorIndex = Math.max(0, Math.min(7, colorIndex + randomOffset));
+
+                // Additional noise-based variation for even more natural look
+                const microVariation = (textureNoise - 0.5) * 2; // ±1
+                colorIndex = Math.max(0, Math.min(7, Math.floor(colorIndex + microVariation)));
 
                 const baseColor = baseColors[Math.min(colorIndex, baseColors.length - 1)];
 
