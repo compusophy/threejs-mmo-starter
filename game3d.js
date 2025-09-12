@@ -351,7 +351,7 @@ class Game3D {
     }
 
     createTreeLeafTexture(size = 512) {
-        console.log(`Creating high-resolution tree leaf texture (${size}x${size}) with darker greens...`);
+        console.log(`Creating ultra-detailed tree leaf texture (${size}x${size}) matching ground quality...`);
 
         const canvas = document.createElement('canvas');
         canvas.width = size;
@@ -364,46 +364,51 @@ class Game3D {
             return new THREE.CanvasTexture(canvas);
         }
 
-        // Create leaf pattern using same noise system as ground and bark
+        // Create leaf pattern using SAME sophisticated noise system as ground
         const imageData = ctx.createImageData(size, size);
         const data = imageData.data;
 
-        // Darker green leaf color palette - matching forest theme
+        // Enhanced darker green leaf color palette - matching forest theme with more depth
         const leafColors = [
-            [15, 80, 15],      // Very dark forest green
-            [25, 110, 25],     // Dark forest green
-            [20, 95, 20],      // Deep forest green
-            [34, 139, 34],     // Forest green (base)
-            [30, 120, 30],     // Medium forest green
-            [40, 150, 40],     // Lighter forest green
-            [45, 160, 45],     // Bright forest green
+            [12, 65, 12],      // Ultra dark forest green
+            [18, 85, 18],      // Very dark forest green
+            [15, 75, 15],      // Deep forest green
+            [22, 95, 22],      // Dark forest green
+            [28, 115, 28],     // Medium-dark forest green
+            [25, 105, 25],     // Standard dark forest green
+            [32, 125, 32],     // Medium forest green
             [35, 135, 35],     // Standard forest green
         ];
 
+        // Generate texture pixel by pixel with SAME LEVEL OF DETAIL as ground
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
                 const pixelIndex = (y * size + x) * 4;
 
-                // Use same sophisticated noise system as ground for consistency
-                const terrainNoise = this.noise(x * 0.008, y * 0.008, 0);      // Main leaf variation
-                const detailNoise = this.noise(x * 0.016, y * 0.016, 1000);    // Fine leaf details
-                const colorNoise = this.noise(x * 0.032, y * 0.032, 2000);     // Color variation
-                const textureNoise = this.noise(x * 0.064, y * 0.064, 3000);   // Surface texture
+                // Use SAME sophisticated multi-layer noise system as ground texture
+                const terrainNoise = this.noise(x * 0.013, y * 0.011, 0);     // Main leaf variation (irregular frequencies like ground)
+                const detailNoise = this.noise(x * 0.027, y * 0.023, 1000);   // Fine details
+                const colorNoise = this.noise(x * 0.051, y * 0.043, 2000);    // Color variation
+                const textureNoise = this.noise(x * 0.091, y * 0.077, 3000);  // Surface texture
+                const microNoise = this.noise(x * 0.163, y * 0.139, 4000);    // Micro details for extra realism
 
-                // Combine with organic weights for natural leaf appearance
-                const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.1 + textureNoise * 0.05;
+                // Combine with organic weights for natural leaf appearance - SAME as ground
+                const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.1 + textureNoise * 0.03 + microNoise * 0.02;
+
+                // Add organic variation (maximum randomness to eliminate seams like ground)
+                const organicVariation = (Math.random() - 0.5) * 0.35;
 
                 // Smooth color blending for natural appearance - no hard bands
                 let colorIndex;
 
-                // Use smooth interpolation between colors based on noise
+                // Use smooth interpolation between colors based on noise - SAME as ground
                 const smoothNoise = (terrainNoise + detailNoise * 0.3 + colorNoise * 0.2) / 1.5;
 
                 // Map smooth noise to color range with natural blending
                 colorIndex = Math.floor(smoothNoise * 8); // 0-7 range
 
-                // Add significant random variation to break up any patterns
-                const randomOffset = (Math.random() - 0.5) * 3; // ±1.5 variation
+                // Add maximum random variation to break up any patterns and seams
+                const randomOffset = (Math.random() - 0.5) * 4; // ±2 variation (SAME as ground)
                 colorIndex = Math.max(0, Math.min(7, colorIndex + randomOffset));
 
                 // Additional noise-based variation for even more natural look
@@ -412,35 +417,78 @@ class Game3D {
 
                 const baseColor = leafColors[Math.min(colorIndex, leafColors.length - 1)];
 
-                // Apply natural Age of Empires-style variation
-                const terrainVariation = (combinedNoise - 0.5) * 20; // ±10 variation (less than bark)
-                const detailVariation = (detailNoise - 0.5) * 10; // ±5 variation
-                const randomVariation = (Math.random() - 0.5) * 6; // ±3 variation
+                // Apply natural Age of Empires-style variation - SAME as ground
+                const terrainVariation = (combinedNoise - 0.5) * 30; // ±15 variation (SAME as ground)
+                const detailVariation = (detailNoise - 0.5) * 15; // ±7.5 detail variation
+                const organicVariationValue = organicVariation * 25; // ±12.5 organic variation
+                const microVariationValue = (microNoise - 0.5) * 8; // ±4 micro variation
 
-                // Calculate final RGB values
-                const r = Math.max(0, Math.min(255, baseColor[0] + terrainVariation + detailVariation + randomVariation)) / 255;
-                const g = Math.max(0, Math.min(255, baseColor[1] + terrainVariation + detailVariation + randomVariation)) / 255;
-                const b = Math.max(0, Math.min(255, baseColor[2] + terrainVariation + detailVariation + randomVariation)) / 255;
+                // Calculate final RGB values with clamping
+                const r = Math.max(0, Math.min(255, baseColor[0] + terrainVariation + organicVariationValue + microVariationValue));
+                const g = Math.max(0, Math.min(255, baseColor[1] + terrainVariation + organicVariationValue + microVariationValue));
+                const b = Math.max(0, Math.min(255, baseColor[2] + terrainVariation + organicVariationValue + microVariationValue));
 
-                // Add organic variation (more natural randomness to break patterns)
-                const organicVariation = (Math.random() - 0.5) * 0.12; // Slightly less than bark
-
-                data[pixelIndex] = Math.max(0, Math.min(255, (r + organicVariation) * 255));
-                data[pixelIndex + 1] = Math.max(0, Math.min(255, (g + organicVariation) * 255));
-                data[pixelIndex + 2] = Math.max(0, Math.min(255, (b + organicVariation) * 255));
-                data[pixelIndex + 3] = 255;
+                // Set pixel data
+                data[pixelIndex] = r;     // Red
+                data[pixelIndex + 1] = g; // Green
+                data[pixelIndex + 2] = b; // Blue
+                data[pixelIndex + 3] = 255; // Alpha (fully opaque)
             }
         }
 
+        // Put the image data on the canvas
         ctx.putImageData(imageData, 0, 0);
 
-        // Add subtle highlights for leaf realism
-        ctx.globalCompositeOperation = 'screen';
-        ctx.fillStyle = 'rgba(60, 179, 113, 0.08)'; // Dark sea green highlights
-        for (let i = 0; i < 12; i++) { // More highlights than before
+        // Add detailed leaf details using SAME techniques as ground
+        ctx.globalCompositeOperation = 'overlay';
+
+        // Add moss-like darker patches (like ground moss)
+        ctx.fillStyle = 'rgba(15, 65, 15, 0.12)'; // Very dark green moss
+        for (let i = 0; i < 15; i++) {
             const x = Math.random() * size;
             const y = Math.random() * size;
-            const radius = Math.random() * 3 + 1;
+            const radius = Math.random() * 4 + 1.5;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Add vein-like details (darker lines)
+        ctx.strokeStyle = 'rgba(10, 50, 10, 0.15)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < 25; i++) {
+            const startX = Math.random() * size;
+            const startY = Math.random() * size;
+            const endX = startX + (Math.random() - 0.5) * 20;
+            const endY = startY + (Math.random() - 0.5) * 20;
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+        }
+
+        // Add subtle highlights for leaf realism (enhanced)
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = 'rgba(60, 179, 113, 0.08)'; // Dark sea green highlights
+        for (let i = 0; i < 20; i++) { // More highlights for detail
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const radius = Math.random() * 2.5 + 0.8;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Add sunlight dappling effect
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+        for (let i = 0; i < 12; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const radius = Math.random() * 6 + 2;
 
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -452,7 +500,7 @@ class Game3D {
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(3, 3); // Leaf pattern repeat
 
-        console.log('High-resolution tree leaf texture created with darker greens');
+        console.log('Ultra-detailed tree leaf texture created with ground-matching quality');
         return texture;
     }
 
