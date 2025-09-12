@@ -1,3 +1,98 @@
+// Generic Obstacle class for collision detection and pathfinding
+class Obstacle {
+    constructor(position, options = {}) {
+        this.position = position.clone();
+        this.type = options.type || 'generic';
+        this.collisionRadius = options.collisionRadius || 1;
+        this.collisionBounds = options.collisionBounds || null; // For rectangular obstacles: {width, height}
+        this.blocksMovement = options.blocksMovement !== false; // Default true
+        this.blocksLineOfSight = options.blocksLineOfSight || false;
+    }
+
+    // Check if a point is inside this obstacle's collision area
+    containsPoint(point) {
+        if (this.collisionBounds) {
+            // Rectangular collision
+            const halfWidth = this.collisionBounds.width / 2;
+            const halfHeight = this.collisionBounds.height / 2;
+            return Math.abs(point.x - this.position.x) <= halfWidth &&
+                   Math.abs(point.z - this.position.z) <= halfHeight;
+        } else {
+            // Circular collision
+            const distance = Math.sqrt(
+                Math.pow(point.x - this.position.x, 2) +
+                Math.pow(point.z - this.position.z, 2)
+            );
+            return distance <= this.collisionRadius;
+        }
+    }
+
+    // Check if a line segment intersects this obstacle
+    intersectsLine(start, end) {
+        if (this.collisionBounds) {
+            // Rectangular intersection (simplified)
+            return this.lineIntersectsRect(start, end, this.collisionBounds);
+        } else {
+            // Circular intersection
+            return this.lineIntersectsCircle(start, end, this.collisionRadius);
+        }
+    }
+
+    lineIntersectsCircle(start, end, radius) {
+        const dx = end.x - start.x;
+        const dz = end.z - start.z;
+        const length = Math.sqrt(dx * dx + dz * dz);
+
+        if (length === 0) return false;
+
+        const ux = dx / length;
+        const uz = dz / length;
+
+        const relX = this.position.x - start.x;
+        const relZ = this.position.z - start.z;
+
+        const proj = relX * ux + relZ * uz;
+        const closestX = start.x + proj * ux;
+        const closestZ = start.z + proj * uz;
+
+        const distance = Math.sqrt(
+            Math.pow(closestX - this.position.x, 2) +
+            Math.pow(closestZ - this.position.z, 2)
+        );
+
+        return distance <= radius && proj >= 0 && proj <= length;
+    }
+
+    lineIntersectsRect(start, end, bounds) {
+        // Simplified rectangular intersection - check if line crosses any edge
+        const halfWidth = bounds.width / 2;
+        const halfHeight = bounds.height / 2;
+
+        const rect = {
+            left: this.position.x - halfWidth,
+            right: this.position.x + halfWidth,
+            top: this.position.z - halfHeight,
+            bottom: this.position.z + halfHeight
+        };
+
+        // Check if line intersects any of the 4 edges
+        return this.lineIntersectsEdge(start, end, rect.left, rect.top, rect.right, rect.top) ||
+               this.lineIntersectsEdge(start, end, rect.right, rect.top, rect.right, rect.bottom) ||
+               this.lineIntersectsEdge(start, end, rect.right, rect.bottom, rect.left, rect.bottom) ||
+               this.lineIntersectsEdge(start, end, rect.left, rect.bottom, rect.left, rect.top);
+    }
+
+    lineIntersectsEdge(x1, y1, x2, y2, x3, y3, x4, y4) {
+        const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (Math.abs(denom) < 0.001) return false;
+
+        const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+        const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+
+        return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+    }
+}
+
 // 3D Game System for Simple Runescape - Version 1.9.2
 class Game3D {
     constructor() {
@@ -23,10 +118,13 @@ class Game3D {
         this.gameObjects = [];
         this.enemies = [];
         this.npcs = [];
+        this.obstacles = []; // Generic obstacles for collision and pathfinding
         this.targetPosition = null;
         this.isMoving = false;
         this.moveSpeed = 0.15; // Increased for more responsive movement
         this.destinationMarker = null;
+        this.waypointMarkers = []; // Array to store intermediate waypoint markers
+        this.pathLine = null; // Visual path line connecting waypoints
         this.cameraLookAtTarget = null; // For smooth camera look-at interpolation
         this.lastTime = 0; // For delta time calculations
 
@@ -148,6 +246,15 @@ class Game3D {
         castle.userData = { type: 'building', buildingType: 'castle', name: 'Lumbridge Castle' };
         this.scene.add(castle);
 
+        // Create obstacle for castle
+        const castleObstacle = new Obstacle(castle.position, {
+            type: 'building',
+            collisionBounds: { width: 8, height: 8 },
+            blocksMovement: true
+        });
+        this.obstacles.push(castleObstacle);
+        castle.userData.obstacle = castleObstacle;
+
         // Add castle walls
         for (let i = 0; i < 4; i++) {
             const wallGeometry = new THREE.BoxGeometry(0.5, 8, 8);
@@ -160,6 +267,15 @@ class Game3D {
             wall.castShadow = true;
             wall.userData = { type: 'building', buildingType: 'castle_wall', wallIndex: i };
             this.scene.add(wall);
+
+            // Create obstacle for each wall
+            const wallObstacle = new Obstacle(wall.position, {
+                type: 'wall',
+                collisionBounds: { width: 0.5, height: 8 },
+                blocksMovement: true
+            });
+            this.obstacles.push(wallObstacle);
+            wall.userData.obstacle = wallObstacle;
         }
     }
 
@@ -169,8 +285,6 @@ class Game3D {
         const leavesGeometry = new THREE.SphereGeometry(3);
         const leavesMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
 
-        // Store tree positions for collision checking
-        this.treePositions = [];
         const minTreeDistance = 8; // Minimum distance between trees
         const maxAttempts = 50; // Max attempts to find valid position
 
@@ -179,19 +293,18 @@ class Game3D {
             let attempts = 0;
             let treeX, treeZ;
 
-            // Try to find a valid position that doesn't overlap with existing trees
+            // Try to find a valid position that doesn't overlap with existing obstacles
             while (!validPosition && attempts < maxAttempts) {
                 treeX = (Math.random() - 0.5) * 80;
                 treeZ = (Math.random() - 0.5) * 80;
 
+                const testPosition = new THREE.Vector3(treeX, 0, treeZ);
                 validPosition = true;
-                // Check distance from all existing trees
-                for (const existingPos of this.treePositions) {
-                    const distance = Math.sqrt(
-                        Math.pow(treeX - existingPos.x, 2) +
-                        Math.pow(treeZ - existingPos.z, 2)
-                    );
-                    if (distance < minTreeDistance) {
+
+                // Check distance from all existing obstacles
+                for (const obstacle of this.obstacles) {
+                    if (obstacle.containsPoint(testPosition) ||
+                        obstacle.position.distanceTo(testPosition) < minTreeDistance) {
                         validPosition = false;
                         break;
                     }
@@ -205,25 +318,32 @@ class Game3D {
                 continue;
             }
 
-            // Store the position for future collision checks
-            this.treePositions.push({ x: treeX, z: treeZ });
+            const treePosition = new THREE.Vector3(treeX, 0, treeZ);
+
+            // Create obstacle for this tree
+            const treeObstacle = new Obstacle(treePosition, {
+                type: 'tree',
+                collisionRadius: 2.5,
+                blocksMovement: true
+            });
+            this.obstacles.push(treeObstacle);
 
             // Tree trunk
             const trunk = new THREE.Mesh(treeGeometry, treeMaterial);
             trunk.position.set(treeX, 3, treeZ);
             trunk.castShadow = true;
-            trunk.userData = { type: 'tree', id: i, collisionRadius: 2.5 };
+            trunk.userData = { type: 'tree', id: i, obstacle: treeObstacle };
             this.scene.add(trunk);
 
             // Tree leaves
             const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
             leaves.position.set(treeX, 3 + 4, treeZ);
             leaves.castShadow = true;
-            leaves.userData = { type: 'tree_leaves', treeId: i, collisionRadius: 3 };
+            leaves.userData = { type: 'tree_leaves', treeId: i };
             this.scene.add(leaves);
         }
 
-        console.log(`Created ${this.treePositions.length} trees with proper spacing`);
+        console.log(`Created ${this.obstacles.filter(o => o.type === 'tree').length} trees with proper spacing`);
     }
 
     createWater() {
@@ -255,6 +375,15 @@ class Game3D {
         northWall.userData = { type: 'wall', boundary: 'north' };
         this.scene.add(northWall);
 
+        // Create obstacle for north wall
+        const northObstacle = new Obstacle(northWall.position, {
+            type: 'world_boundary',
+            collisionBounds: { width: worldSize + wallThickness * 2, height: wallThickness },
+            blocksMovement: true
+        });
+        this.obstacles.push(northObstacle);
+        northWall.userData.obstacle = northObstacle;
+
         // South wall (negative Z)
         const southWallGeometry = new THREE.BoxGeometry(worldSize + wallThickness * 2, wallHeight, wallThickness);
         const southWall = new THREE.Mesh(southWallGeometry, wallMaterial);
@@ -263,6 +392,15 @@ class Game3D {
         southWall.receiveShadow = true;
         southWall.userData = { type: 'wall', boundary: 'south' };
         this.scene.add(southWall);
+
+        // Create obstacle for south wall
+        const southObstacle = new Obstacle(southWall.position, {
+            type: 'world_boundary',
+            collisionBounds: { width: worldSize + wallThickness * 2, height: wallThickness },
+            blocksMovement: true
+        });
+        this.obstacles.push(southObstacle);
+        southWall.userData.obstacle = southObstacle;
 
         // East wall (positive X)
         const eastWallGeometry = new THREE.BoxGeometry(wallThickness, wallHeight, worldSize);
@@ -273,6 +411,15 @@ class Game3D {
         eastWall.userData = { type: 'wall', boundary: 'east' };
         this.scene.add(eastWall);
 
+        // Create obstacle for east wall
+        const eastObstacle = new Obstacle(eastWall.position, {
+            type: 'world_boundary',
+            collisionBounds: { width: wallThickness, height: worldSize },
+            blocksMovement: true
+        });
+        this.obstacles.push(eastObstacle);
+        eastWall.userData.obstacle = eastObstacle;
+
         // West wall (negative X)
         const westWallGeometry = new THREE.BoxGeometry(wallThickness, wallHeight, worldSize);
         const westWall = new THREE.Mesh(westWallGeometry, wallMaterial);
@@ -281,6 +428,15 @@ class Game3D {
         westWall.receiveShadow = true;
         westWall.userData = { type: 'wall', boundary: 'west' };
         this.scene.add(westWall);
+
+        // Create obstacle for west wall
+        const westObstacle = new Obstacle(westWall.position, {
+            type: 'world_boundary',
+            collisionBounds: { width: wallThickness, height: worldSize },
+            blocksMovement: true
+        });
+        this.obstacles.push(westObstacle);
+        westWall.userData.obstacle = westObstacle;
 
         // Store wall references for collision detection
         this.worldWalls = [northWall, southWall, eastWall, westWall];
@@ -561,6 +717,9 @@ class Game3D {
             const pathPoints = this.calculatePath(this.player.position, targetPos);
             if (pathPoints.length === 0) {
                 console.log('Cannot find any path to position - completely surrounded');
+                // Clear any existing path visuals since no path was found
+                this.clearWaypointMarkers();
+                this.clearPathLine();
                 // Only block if absolutely no path exists
                 this.showClickEffect(targetPos);
                 return;
@@ -583,6 +742,9 @@ class Game3D {
             const fallbackPath = this.calculatePath(this.player.position, fallbackPos);
             if (fallbackPath.length === 0) {
                 console.log('Cannot find any path to fallback position - completely surrounded');
+                // Clear any existing path visuals since no path was found
+                this.clearWaypointMarkers();
+                this.clearPathLine();
                 this.showClickEffect(fallbackPos);
                 return;
             }
@@ -661,36 +823,161 @@ class Game3D {
         console.log('Movement started, isMoving =', this.isMoving);
     }
 
-    createDestinationMarker(position) {
-        // Remove existing marker
-        if (this.destinationMarker) {
-            this.scene.remove(this.destinationMarker);
-        }
-
-        // Create new marker - smaller yellow circle at exact click position
-        const markerGeometry = new THREE.CircleGeometry(0.2, 16);
+    createWaypointMarker(position, isFinalDestination = false) {
+        // Create new marker - different styles for intermediate vs final destination
+        const markerGeometry = new THREE.CircleGeometry(isFinalDestination ? 0.3 : 0.2, 16);
         const markerMaterial = new THREE.MeshBasicMaterial({
-            color: 0xFFFF00,
+            color: isFinalDestination ? 0xFFFF00 : 0xFFA500, // Yellow for final, Orange for intermediate
             transparent: true,
-            opacity: 0.7,
+            opacity: isFinalDestination ? 0.8 : 0.6, // More opaque for final destination
             side: THREE.DoubleSide
         });
 
-        this.destinationMarker = new THREE.Mesh(markerGeometry, markerMaterial);
-        this.destinationMarker.position.copy(position);
-        this.destinationMarker.position.y = 0.01; // Just above ground level
-        this.destinationMarker.rotation.x = -Math.PI / 2; // Lay flat on ground
+        const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+        marker.position.copy(position);
+        marker.position.y = 0.01; // Just above ground level
+        marker.rotation.x = -Math.PI / 2; // Lay flat on ground
 
-        // Add pulsing animation
-        this.markerTime = 0;
-        this.scene.add(this.destinationMarker);
+        // Store marker info for animation and cleanup
+        marker.isFinalDestination = isFinalDestination;
+        marker.animationTime = 0;
+
+        // Add to scene and store reference
+        this.scene.add(marker);
+        this.waypointMarkers.push(marker);
+
+        return marker;
+    }
+
+    clearWaypointMarkers() {
+        // Remove all waypoint markers from scene
+        this.waypointMarkers.forEach(marker => {
+            this.scene.remove(marker);
+        });
+        this.waypointMarkers = [];
+    }
+
+    createPathLine(pathPoints) {
+        // Clear existing path line
+        this.clearPathLine();
+
+        if (pathPoints.length === 0) return; // No path to draw
+
+        // Create the complete path including current player position
+        const fullPath = [this.player.position.clone(), ...pathPoints];
+
+        // Create geometry for the path line
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+
+        // Add points for the dotted line
+        for (let i = 0; i < fullPath.length - 1; i++) {
+            const start = fullPath[i];
+            const end = fullPath[i + 1];
+
+            // Create dotted line segments
+            const distance = start.distanceTo(end);
+            const segments = Math.max(10, Math.floor(distance / 0.5)); // More segments for longer distances
+
+            for (let j = 0; j <= segments; j++) {
+                const t = j / segments;
+                const point = new THREE.Vector3().lerpVectors(start, end, t);
+                positions.push(point.x, 0.02, point.z); // Slightly above ground
+            }
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+        // Create material for dotted yellow line
+        const material = new THREE.LineDashedMaterial({
+            color: 0xFFFF00, // Yellow to match destination marker
+            dashSize: 0.3,
+            gapSize: 0.2,
+            opacity: 0.8,
+            transparent: true,
+        });
+
+        // Create the line
+        this.pathLine = new THREE.Line(geometry, material);
+        this.pathLine.computeLineDistances(); // Required for dashed lines
+
+        // Add to scene
+        this.scene.add(this.pathLine);
+    }
+
+    updatePathLine() {
+        // Don't update if no path line exists or no path points
+        if (!this.pathLine || this.pathPoints.length === 0) return;
+
+        // Create the complete path including current player position
+        const fullPath = [this.player.position.clone(), ...this.pathPoints];
+
+        // Update the geometry positions
+        const positions = [];
+        for (let i = 0; i < fullPath.length - 1; i++) {
+            const start = fullPath[i];
+            const end = fullPath[i + 1];
+
+            // Create dotted line segments
+            const distance = start.distanceTo(end);
+            const segments = Math.max(10, Math.floor(distance / 0.5));
+
+            for (let j = 0; j <= segments; j++) {
+                const t = j / segments;
+                const point = new THREE.Vector3().lerpVectors(start, end, t);
+                positions.push(point.x, 0.02, point.z);
+            }
+        }
+
+        // Update the geometry
+        this.pathLine.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        this.pathLine.computeLineDistances(); // Required for dashed lines
+    }
+
+    clearPathLine() {
+        // Remove existing path line from scene
+        if (this.pathLine) {
+            this.scene.remove(this.pathLine);
+            this.pathLine.geometry.dispose();
+            this.pathLine.material.dispose();
+            this.pathLine = null;
+        }
+    }
+
+    createDestinationMarker(position) {
+        // Legacy method - now uses waypoint marker system
+        return this.createWaypointMarker(position, true);
+    }
+
+    updateWaypointMarkers() {
+        // Update animation for all waypoint markers
+        this.waypointMarkers.forEach(marker => {
+            marker.animationTime += 0.05;
+
+            // Different animation patterns for different marker types
+            if (marker.isFinalDestination) {
+                // Final destination: steady pulsing
+                marker.material.opacity = 0.8 + Math.sin(marker.animationTime * 5) * 0.2;
+            } else {
+                // Intermediate waypoints: faster, more subtle pulsing
+                marker.material.opacity = 0.6 + Math.sin(marker.animationTime * 8) * 0.15;
+            }
+        });
+
+        // Update the path line dynamically to show from current position
+        if (this.pathPoints.length > 0) {
+            this.updatePathLine();
+        }
+
+        // Animate the path line if it exists
+        if (this.pathLine) {
+            this.pathLine.material.opacity = 0.7 + Math.sin(Date.now() * 0.003) * 0.2;
+        }
     }
 
     updateDestinationMarker() {
-        if (this.destinationMarker) {
-            this.markerTime += 0.05;
-            this.destinationMarker.material.opacity = 0.8 + Math.sin(this.markerTime * 5) * 0.2;
-        }
+        // Legacy method - now delegates to updateWaypointMarkers
+        this.updateWaypointMarkers();
     }
 
     showClickEffect(position) {
@@ -738,9 +1025,7 @@ class Game3D {
         console.log('Object userData:', object?.userData);
 
         // Handle different object types
-        if (object.userData?.type === 'enemy') {
-            this.attackEnemy(object);
-        } else if (object.userData?.type === 'npc') {
+        if (object.userData?.type === 'npc') {
             this.talkToNPC(object);
         } else if (object.userData?.type === 'resource') {
             this.gatherResource(object);
@@ -789,11 +1074,6 @@ class Game3D {
         this.player.position.add(direction.multiplyScalar(0.1));
     }
 
-    attackEnemy(enemy) {
-        // Trigger combat system
-        console.log('Attacking enemy:', enemy.userData.name);
-        // Integrate with existing combat system
-    }
 
     talkToNPC(npc) {
         console.log('Talking to NPC:', npc.userData.name);
@@ -817,8 +1097,8 @@ class Game3D {
         // Update minimap
         this.updateMinimap();
 
-        // Update destination marker
-        this.updateDestinationMarker();
+        // Update waypoint markers
+        this.updateWaypointMarkers();
 
         // Update mouse interaction (cursor changes)
         this.updateMouseInteraction();
@@ -867,10 +1147,9 @@ class Game3D {
                 this.currentPathIndex = 0;
                 this.isWalking = false;
                 this.resetPlayerPose();
-                if (this.destinationMarker) {
-                    this.scene.remove(this.destinationMarker);
-                    this.destinationMarker = null;
-                }
+                // Clear all waypoint markers and path line when reaching final destination
+                this.clearWaypointMarkers();
+                this.clearPathLine();
                 return;
             }
         }
@@ -879,18 +1158,14 @@ class Game3D {
         const moveDistance = (this.moveSpeed * deltaTime) / 16.67; // Normalize to 60fps
         const moveVector = direction.multiplyScalar(moveDistance);
 
-        // Check collision with world boundaries and trees before applying movement
+        // Check collision with obstacles before applying movement
         const newPosition = this.player.position.clone().add(moveVector);
 
-        const boundaryCheck = this.checkWorldBoundaries(newPosition);
-        const treeCheck = this.checkTreeCollisions(newPosition);
-
-        if (boundaryCheck && treeCheck) {
+        if (this.checkCollisions(newPosition)) {
             // Apply smooth movement if no collision
             this.player.position.add(moveVector);
         } else {
-            if (!boundaryCheck) console.log('Blocked by world boundary');
-            if (!treeCheck) console.log('Blocked by tree collision');
+            console.log('Movement blocked by obstacle');
         }
 
         // Smooth player rotation to face movement direction
@@ -1007,44 +1282,22 @@ class Game3D {
         this.camera.lookAt(this.cameraLookAtTarget);
     }
 
-    checkWorldBoundaries(position) {
-        const worldBoundary = 99; // Match wall positions (±101) minus player size
-        const playerRadius = 1; // Approximate player collision radius
+    checkCollisions(position) {
+        const playerRadius = 1; // Player collision radius
 
-        // Check if new position would hit world boundaries (walls at ±101)
-        if (Math.abs(position.x) > worldBoundary - playerRadius ||
-            Math.abs(position.z) > worldBoundary - playerRadius) {
-            return false; // Collision detected, don't allow movement
+        // Check collision with all obstacles that block movement
+        for (const obstacle of this.obstacles) {
+            if (!obstacle.blocksMovement) continue;
+
+            if (obstacle.containsPoint(position)) {
+                return false; // Collision detected, don't allow movement
+            }
         }
 
         return true; // No collision, allow movement
     }
 
-    checkTreeCollisions(position) {
-        if (!this.treePositions) return true; // No trees to check
-
-        const playerRadius = 1; // Player collision radius
-
-        // Check collision with each tree trunk (not leaves)
-        for (let i = 0; i < this.treePositions.length; i++) {
-            const treePos = this.treePositions[i];
-            const distance = Math.sqrt(
-                Math.pow(position.x - treePos.x, 2) +
-                Math.pow(position.z - treePos.z, 2)
-            );
-
-            // Only collide with tree trunk (smaller radius)
-            const trunkRadius = 1.2; // Much smaller - only the actual trunk
-
-            if (distance < playerRadius + trunkRadius) {
-                return false; // Collision with trunk detected, don't allow movement
-            }
-        }
-
-        return true; // No collision with tree trunks, allow movement
-    }
-
-    // Pathfinding methods for avoiding trees
+    // Generic pathfinding methods for avoiding obstacles
     calculatePath(startPos, targetPos) {
         // First, try direct path
         if (this.checkDirectPath(startPos, targetPos)) {
@@ -1054,7 +1307,7 @@ class Game3D {
 
         console.log('Direct path blocked, finding detour...');
 
-        // If direct path is blocked, find a detour around blocking trees
+        // If direct path is blocked, find a detour around blocking obstacles
         const detourPoint = this.findDetourPoint(startPos, targetPos);
         if (detourPoint) {
             console.log('Found detour at:', detourPoint.x.toFixed(2), detourPoint.z.toFixed(2));
@@ -1067,7 +1320,7 @@ class Game3D {
     }
 
     checkDirectPath(startPos, targetPos) {
-        // Check if the straight line path is blocked by trees
+        // Check if the straight line path is blocked by obstacles
         const direction = new THREE.Vector3()
             .subVectors(targetPos, startPos)
             .normalize();
@@ -1085,7 +1338,7 @@ class Game3D {
                 .copy(startPos)
                 .add(direction.clone().multiplyScalar(distance * t));
 
-            if (!this.checkTreeCollisions(checkPoint)) {
+            if (!this.checkCollisions(checkPoint)) {
                 return false; // Path is blocked
             }
         }
@@ -1094,59 +1347,66 @@ class Game3D {
     }
 
     findDetourPoint(startPos, targetPos) {
-        // Find all trees that might be blocking the path
-        const blockingTrees = this.findAllBlockingTrees(startPos, targetPos);
+        // Find all obstacles that might be blocking the path
+        const blockingObstacles = this.findAllBlockingObstacles(startPos, targetPos);
 
-        if (blockingTrees.length === 0) return null;
+        if (blockingObstacles.length === 0) return null;
 
-        // For each blocking tree, try to find a good detour
-        for (const treePos of blockingTrees) {
-            const detour = this.calculateTreeDetour(startPos, targetPos, treePos);
+        // For each blocking obstacle, try to find a good detour
+        for (const obstacle of blockingObstacles) {
+            const detour = this.calculateObstacleDetour(startPos, targetPos, obstacle);
             if (detour) {
                 return detour;
             }
         }
 
-        // If no good detour found around individual trees, try a more aggressive approach
+        // If no good detour found around individual obstacles, try a more aggressive approach
         return this.findAggressiveDetour(startPos, targetPos);
     }
 
-    findAllBlockingTrees(startPos, targetPos) {
-        const blockingTrees = [];
+    findAllBlockingObstacles(startPos, targetPos) {
+        const blockingObstacles = [];
         const direction = new THREE.Vector3()
             .subVectors(targetPos, startPos)
             .normalize();
 
         const distance = startPos.distanceTo(targetPos);
 
-        // Check all trees to see which ones intersect the path
-        for (const treePos of this.treePositions) {
-            // Project tree position onto the path line
-            const toTree = new THREE.Vector3(treePos.x - startPos.x, 0, treePos.z - startPos.z);
-            const projection = toTree.dot(direction);
+        // Check all obstacles to see which ones intersect the path
+        for (const obstacle of this.obstacles) {
+            if (!obstacle.blocksMovement) continue;
+
+            // Project obstacle position onto the path line
+            const toObstacle = new THREE.Vector3(
+                obstacle.position.x - startPos.x,
+                0,
+                obstacle.position.z - startPos.z
+            );
+            const projection = toObstacle.dot(direction);
             const projectedPoint = new THREE.Vector3()
                 .copy(startPos)
                 .add(direction.clone().multiplyScalar(projection));
 
-            // Check if tree is close to the path
-            const treeToPath = Math.sqrt(
-                Math.pow(treePos.x - projectedPoint.x, 2) +
-                Math.pow(treePos.z - projectedPoint.z, 2)
+            // Check if obstacle is close to the path
+            const obstacleToPath = Math.sqrt(
+                Math.pow(obstacle.position.x - projectedPoint.x, 2) +
+                Math.pow(obstacle.position.z - projectedPoint.z, 2)
             );
 
-            // Include tree if it's within 3 units of path and in the path direction
-            if (treeToPath < 3 && projection > 0 && projection < distance) {
-                blockingTrees.push(treePos);
+            // Include obstacle if it's within reasonable distance of path and in the path direction
+            const bufferDistance = obstacle.collisionRadius || 3;
+            if (obstacleToPath < bufferDistance && projection > 0 && projection < distance) {
+                blockingObstacles.push(obstacle);
             }
         }
 
-        return blockingTrees;
+        return blockingObstacles;
     }
 
-    calculateTreeDetour(startPos, targetPos, treePos) {
-        const treeVector = new THREE.Vector3(treePos.x, 0, treePos.z);
-        const trunkRadius = 1.2;
-        const detourDistance = trunkRadius + 2.5; // Slightly larger detour
+    calculateObstacleDetour(startPos, targetPos, obstacle) {
+        const obstacleVector = obstacle.position.clone();
+        const obstacleRadius = obstacle.collisionRadius || 3;
+        const detourDistance = obstacleRadius + 2.5; // Slightly larger detour
 
         // Calculate the direction from start to target
         const pathDirection = new THREE.Vector3()
@@ -1156,7 +1416,7 @@ class Game3D {
         // Calculate perpendicular directions for detour
         const perpendicular = new THREE.Vector3(-pathDirection.z, 0, pathDirection.x);
 
-        // Try both directions around the tree
+        // Try both directions around the obstacle
         const detourDirections = [
             perpendicular.clone(),
             perpendicular.clone().negate()
@@ -1168,7 +1428,7 @@ class Game3D {
         for (const dir of detourDirections) {
             // Calculate detour point
             const detourPoint = new THREE.Vector3()
-                .copy(treeVector)
+                .copy(obstacleVector)
                 .add(dir.clone().multiplyScalar(detourDistance));
 
             // Check if this detour is viable
@@ -1230,7 +1490,20 @@ class Game3D {
         this.pathPoints = pathPoints;
         this.currentPathIndex = 0;
 
+        // Clear existing waypoint markers and path line
+        this.clearWaypointMarkers();
+        this.clearPathLine();
+
         if (pathPoints.length > 0) {
+            // Create markers for all waypoints
+            for (let i = 0; i < pathPoints.length; i++) {
+                const isFinalDestination = (i === pathPoints.length - 1);
+                this.createWaypointMarker(pathPoints[i], isFinalDestination);
+            }
+
+            // Create the visual path line connecting all waypoints
+            this.createPathLine(pathPoints);
+
             this.setMovementTarget(pathPoints[0]);
         }
     }
@@ -1346,67 +1619,6 @@ class Game3D {
         this.renderer.render(this.scene, this.camera);
     }
 
-    // No particle system - clean gameplay
-
-    // No particle effects - clean gameplay
-
-    // Clean combat methods - no particle effects
-    attackEnemy(enemy) {
-        console.log('Attacking enemy:', enemy.userData.name);
-
-        // Simple damage calculation
-        const damage = Math.floor(Math.random() * 10) + 5;
-        console.log(`You deal ${damage} damage to ${enemy.userData.name}!`);
-
-        // Show damage number
-        this.showDamageNumber(damage, enemy.position);
-
-        // Remove enemy after combat (simplified)
-        setTimeout(() => {
-            this.scene.remove(enemy);
-            console.log(`${enemy.userData.name} defeated!`);
-        }, 1000);
-    }
-
-    showDamageNumber(damage, position) {
-        // Create a simple text element for damage numbers
-        const damageDiv = document.createElement('div');
-        damageDiv.textContent = damage;
-        damageDiv.style.position = 'absolute';
-        damageDiv.style.color = '#ff0000';
-        damageDiv.style.fontSize = '20px';
-        damageDiv.style.fontWeight = 'bold';
-        damageDiv.style.pointerEvents = 'none';
-        damageDiv.style.zIndex = '1000';
-        damageDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.7)';
-
-        // Position the damage number above the enemy
-        const screenPos = position.clone();
-        screenPos.project(this.camera);
-        damageDiv.style.left = (screenPos.x * 0.5 + 0.5) * window.innerWidth + 'px';
-        damageDiv.style.top = (-screenPos.y * 0.5 + 0.5) * window.innerHeight - 50 + 'px';
-
-        document.body.appendChild(damageDiv);
-
-        // Animate the damage number
-        let opacity = 1;
-        let yPos = parseFloat(damageDiv.style.top);
-        const animate = () => {
-            opacity -= 0.02;
-            yPos -= 1;
-            damageDiv.style.opacity = opacity;
-            damageDiv.style.top = yPos + 'px';
-
-            if (opacity > 0) {
-                requestAnimationFrame(animate);
-            } else {
-                document.body.removeChild(damageDiv);
-            }
-        };
-        animate();
-    }
-
-    // No weather effects - clean gameplay
 }
 
 // Initialize 3D game when page loads
