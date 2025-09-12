@@ -984,7 +984,6 @@ class Game3D {
 
         // ACCURATE POSITIONING: Calculate exact feet-to-torso distance
         // The feet are positioned below the torso center
-        const legLength = totalHeight * 0.54; // 0.972 total leg length
         const thighLength = legLength * 0.5; // 0.486
         const calfLength = legLength * 0.45; // 0.4374
         const footOffset = 0.04; // Small gap between calf and foot
@@ -1864,38 +1863,38 @@ class Game3D {
     updateCamera() {
         // Only update camera position for isometric mode
         if (this.currentCameraMode === 'isometric') {
-            // ISOMETRIC CAMERA: Follow player from south at an angle
-            const cameraHeight = 45;
-            const cameraDistance = 45;
+        // ISOMETRIC CAMERA: Follow player from south at an angle
+        const cameraHeight = 45;
+        const cameraDistance = 45;
 
-            // Position camera south of player, maintaining isometric angle
-            const idealPosition = new THREE.Vector3(
-                this.player.position.x,           // Same X as player
-                cameraHeight,                     // Fixed height above
-                this.player.position.z + cameraDistance  // South of player
-            );
+        // Position camera south of player, maintaining isometric angle
+        const idealPosition = new THREE.Vector3(
+            this.player.position.x,           // Same X as player
+            cameraHeight,                     // Fixed height above
+            this.player.position.z + cameraDistance  // South of player
+        );
 
-            // Smooth camera following
-            const lerpFactor = this.isMoving ? 0.15 : 0.1;
-            this.camera.position.lerp(idealPosition, lerpFactor);
+        // Smooth camera following
+        const lerpFactor = this.isMoving ? 0.15 : 0.1;
+        this.camera.position.lerp(idealPosition, lerpFactor);
 
-            // Look at player position from isometric angle
-            const lookAtTarget = new THREE.Vector3(
-                this.player.position.x,     // Look at player's X
-                0,                         // Look at ground level
-                this.player.position.z      // Look at player's Z
-            );
+        // Look at player position from isometric angle
+        const lookAtTarget = new THREE.Vector3(
+            this.player.position.x,     // Look at player's X
+            0,                         // Look at ground level
+            this.player.position.z      // Look at player's Z
+        );
 
-            // Smooth look-at interpolation to prevent rotation jitter
-            if (!this.cameraLookAtTarget) {
-                this.cameraLookAtTarget = lookAtTarget.clone();
-            }
+        // Smooth look-at interpolation to prevent rotation jitter
+        if (!this.cameraLookAtTarget) {
+            this.cameraLookAtTarget = lookAtTarget.clone();
+        }
 
-            // Interpolate look-at target for ultra-smooth rotation
-            this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
+        // Interpolate look-at target for ultra-smooth rotation
+        this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
 
-            // Apply smooth look-at
-            this.camera.lookAt(this.cameraLookAtTarget);
+        // Apply smooth look-at
+        this.camera.lookAt(this.cameraLookAtTarget);
         } else if (this.currentCameraMode === 'birds-eye') {
             // BIRD'S EYE: Follow player from high above
             const playerPos = this.player.position.clone();
