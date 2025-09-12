@@ -1854,37 +1854,38 @@ class Game3D {
         // Only update camera position for isometric mode
         if (this.currentCameraMode === 'isometric') {
             // ISOMETRIC CAMERA: Follow player from south at an angle
-        const cameraHeight = 45;
-        const cameraDistance = 45;
+            const cameraHeight = 45;
+            const cameraDistance = 45;
 
-        // Position camera south of player, maintaining isometric angle
-        const idealPosition = new THREE.Vector3(
-            this.player.position.x,           // Same X as player
-            cameraHeight,                     // Fixed height above
-            this.player.position.z + cameraDistance  // South of player
-        );
+            // Position camera south of player, maintaining isometric angle
+            const idealPosition = new THREE.Vector3(
+                this.player.position.x,           // Same X as player
+                cameraHeight,                     // Fixed height above
+                this.player.position.z + cameraDistance  // South of player
+            );
 
-        // Smooth camera following
-        const lerpFactor = this.isMoving ? 0.15 : 0.1;
-        this.camera.position.lerp(idealPosition, lerpFactor);
+            // Smooth camera following
+            const lerpFactor = this.isMoving ? 0.15 : 0.1;
+            this.camera.position.lerp(idealPosition, lerpFactor);
 
-        // Look at player position from isometric angle
-        const lookAtTarget = new THREE.Vector3(
-            this.player.position.x,     // Look at player's X
-            0,                         // Look at ground level
-            this.player.position.z      // Look at player's Z
-        );
+            // Look at player position from isometric angle
+            const lookAtTarget = new THREE.Vector3(
+                this.player.position.x,     // Look at player's X
+                0,                         // Look at ground level
+                this.player.position.z      // Look at player's Z
+            );
 
-        // Smooth look-at interpolation to prevent rotation jitter
-        if (!this.cameraLookAtTarget) {
-            this.cameraLookAtTarget = lookAtTarget.clone();
+            // Smooth look-at interpolation to prevent rotation jitter
+            if (!this.cameraLookAtTarget) {
+                this.cameraLookAtTarget = lookAtTarget.clone();
+            }
+
+            // Interpolate look-at target for ultra-smooth rotation
+            this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
+
+            // Apply smooth look-at
+            this.camera.lookAt(this.cameraLookAtTarget);
         }
-
-        // Interpolate look-at target for ultra-smooth rotation
-        this.cameraLookAtTarget.lerp(lookAtTarget, lerpFactor);
-
-        // Apply smooth look-at
-        this.camera.lookAt(this.cameraLookAtTarget);
     }
 
     // Zoom system methods
