@@ -982,11 +982,17 @@ class Game3D {
         // Player character group with realistic human proportions
         this.player = new THREE.Group();
 
-        // SIMPLE & ACCURATE: Position feet exactly at Y=0
-        // The player group origin is at the center of the torso
-        // We need to offset by torsoCenterY so feet touch ground
-        const torsoCenterY = torsoHeight / 2; // Distance from torso center to ground
-        this.player.position.set(0, torsoCenterY, 0); // Feet at Y=0, torso center at torsoCenterY
+        // ACCURATE POSITIONING: Calculate exact feet-to-torso distance
+        // The feet are positioned below the torso center
+        const legLength = totalHeight * 0.54; // 0.972 total leg length
+        const thighLength = legLength * 0.5; // 0.486
+        const calfLength = legLength * 0.45; // 0.4374
+        const footOffset = 0.04; // Small gap between calf and foot
+
+        // Distance from torso center to feet:
+        // hip(0) + thigh_center(0.243) + knee(0.486) + calf_center(0.2187) + foot(0.4774) = 1.4251
+        const torsoToFeetDistance = thighLength/2 + thighLength + calfLength/2 + calfLength + footOffset;
+        this.player.position.set(0, torsoToFeetDistance, 0); // Position so feet touch Y=0
 
         // Colors for different body parts
         const skinColor = 0xFFDBAC;
@@ -1461,11 +1467,14 @@ class Game3D {
 
         // Calculate the correct feet Y position
         const totalHeight = 1.8;
-        const torsoHeight = totalHeight * 0.32;
+        const legLength = totalHeight * 0.54; // Same as createPlayer
 
-        // SIMPLE & ACCURATE: Position feet exactly at Y=0
-        const torsoCenterY = torsoHeight / 2; // Distance from torso center to ground
-        this.targetPosition.y = torsoCenterY; // Keep feet at ground level (Y=0)
+        // ACCURATE POSITIONING: Same calculation as createPlayer
+        const thighLength = legLength * 0.5;
+        const calfLength = legLength * 0.45;
+        const footOffset = 0.04;
+        const torsoToFeetDistance = thighLength/2 + thighLength + calfLength/2 + calfLength + footOffset;
+        this.targetPosition.y = torsoToFeetDistance; // Keep feet at ground level (Y=0)
 
         // DON'T create destination markers for intermediate waypoints
         // Only the final destination should have a marker (handled in setPathMovement)
@@ -1842,11 +1851,14 @@ class Game3D {
 
         // Reset vertical position (feet on ground level)
         const totalHeight = 1.8;
-        const torsoHeight = totalHeight * 0.32; // Same as createPlayer
+        const legLength = totalHeight * 0.54; // Same as createPlayer
 
-        // SIMPLE & ACCURATE: Position feet exactly at Y=0
-        const torsoCenterY = torsoHeight / 2; // Distance from torso center to ground
-        this.player.position.y = torsoCenterY; // Feet at Y=0, torso center at torsoCenterY
+        // ACCURATE POSITIONING: Same calculation as createPlayer
+        const thighLength = legLength * 0.5;
+        const calfLength = legLength * 0.45;
+        const footOffset = 0.04;
+        const torsoToFeetDistance = thighLength/2 + thighLength + calfLength/2 + calfLength + footOffset;
+        this.player.position.y = torsoToFeetDistance; // Feet at Y=0
     }
 
     updateCamera() {
