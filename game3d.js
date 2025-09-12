@@ -976,24 +976,30 @@ class Game3D {
         // Don't update if no path line exists or no path points
         if (!this.pathLine || this.pathPoints.length === 0) return;
 
-        // Create the complete path including current player position
-        const fullPath = [this.player.position.clone(), ...this.pathPoints];
+        // Only show path to the immediate next waypoint (not all remaining waypoints)
+        const currentTarget = this.currentPathIndex < this.pathPoints.length
+            ? this.pathPoints[this.currentPathIndex]
+            : null;
+
+        if (!currentTarget) return;
+
+        // Create path from current position to next waypoint only
+        const fullPath = [this.player.position.clone(), currentTarget];
 
         // Update the geometry positions
         const positions = [];
-        for (let i = 0; i < fullPath.length - 1; i++) {
-            const start = fullPath[i];
-            const end = fullPath[i + 1];
+        const start = fullPath[0];
+        const end = fullPath[1];
 
-            // Create dotted line segments
-            const distance = start.distanceTo(end);
-            const segments = Math.max(10, Math.floor(distance / 0.5));
+        // Create dotted line segments from player to current target
+        const distance = start.distanceTo(end);
+        const segments = Math.max(15, Math.floor(distance / 0.3)); // More segments for smoother line
 
-            for (let j = 0; j <= segments; j++) {
-                const t = j / segments;
-                const point = new THREE.Vector3().lerpVectors(start, end, t);
-                positions.push(point.x, 0.02, point.z);
-            }
+        // Create points from target back to player so dashes appear from player forward
+        for (let j = segments; j >= 0; j--) {
+            const t = j / segments;
+            const point = new THREE.Vector3().lerpVectors(start, end, t);
+            positions.push(point.x, 0.02, point.z);
         }
 
         // Update the geometry
