@@ -400,16 +400,21 @@ class Game3D {
 
     // Organic Age of Empires-style noise function (reusable class method)
     noise(x, y, seed = 0) {
-        // Use multiple noise functions with different characteristics
+        // Use multiple noise functions with different characteristics and more randomness
         const n1 = Math.sin(x * 0.01 + seed) * Math.cos(y * 0.01 + seed);
         const n2 = Math.sin(x * 0.03 + seed * 1.7) * Math.cos(y * 0.025 + seed * 2.1);
         const n3 = Math.sin(x * 0.07 + seed * 3.3) * Math.cos(y * 0.08 + seed * 2.9);
         const n4 = Math.sin(x * 0.15 + seed * 5.7) * Math.cos(y * 0.12 + seed * 4.1);
 
-        // Add some fractal-like variation
+        // Add fractal-like variation with more complexity
         const fractal = Math.sin(x * 0.005 + y * 0.007 + seed) * 0.3;
+        const fractal2 = Math.sin(x * 0.02 + y * 0.018 + seed * 1.3) * 0.2;
 
-        const combined = n1 * 0.4 + n2 * 0.3 + n3 * 0.2 + n4 * 0.1 + fractal;
+        // Add some additional randomness to break patterns
+        const random1 = Math.sin(x * 0.041 + y * 0.037 + seed * 2.7) * 0.15;
+        const random2 = Math.cos(x * 0.089 + y * 0.061 + seed * 4.1) * 0.1;
+
+        const combined = n1 * 0.25 + n2 * 0.2 + n3 * 0.15 + n4 * 0.1 + fractal * 0.15 + fractal2 * 0.1 + random1 * 0.03 + random2 * 0.02;
         return (combined + 1) / 2; // Normalize to 0-1
     }
 
@@ -453,8 +458,8 @@ class Game3D {
             // Map smooth noise to color range with natural blending
             colorIndex = Math.floor(smoothNoise * 8); // 0-7 range
 
-            // Add significant random variation to break up any patterns
-            const randomOffset = (Math.random() - 0.5) * 3; // ±1.5 variation
+            // Add maximum random variation to break up any patterns and seams
+            const randomOffset = (Math.random() - 0.5) * 4; // ±2 variation
             colorIndex = Math.max(0, Math.min(7, colorIndex + randomOffset));
 
             // Additional noise-based variation for even more natural look
@@ -520,17 +525,17 @@ class Game3D {
             for (let x = 0; x < size; x++) {
                 const pixelIndex = (y * size + x) * 4;
 
-                // Multiple organic noise layers for high-resolution grass terrain
-                const terrainNoise = this.noise(x * 0.01, y * 0.01, 0);      // Main terrain variation
-                const detailNoise = this.noise(x * 0.02, y * 0.02, 1000);    // Fine details
-                const colorNoise = this.noise(x * 0.04, y * 0.04, 2000);     // Color variation
-                const textureNoise = this.noise(x * 0.08, y * 0.08, 3000);   // Texture pattern
+                // Multiple organic noise layers for high-resolution grass terrain (adjusted for seam-free)
+                const terrainNoise = this.noise(x * 0.013, y * 0.011, 0);     // Main terrain variation
+                const detailNoise = this.noise(x * 0.027, y * 0.023, 1000);   // Fine details
+                const colorNoise = this.noise(x * 0.051, y * 0.043, 2000);    // Color variation
+                const textureNoise = this.noise(x * 0.091, y * 0.077, 3000);  // Texture pattern
 
                 // Combine with organic weights for natural appearance
                 const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.1 + textureNoise * 0.05;
 
-                // Add organic variation (more natural randomness to break patterns)
-                const organicVariation = (Math.random() - 0.5) * 0.25;
+                // Add organic variation (maximum randomness to eliminate seams)
+                const organicVariation = (Math.random() - 0.5) * 0.35;
 
                 // Smooth color blending for natural appearance - no hard bands
                 let colorIndex;
@@ -541,8 +546,8 @@ class Game3D {
                 // Map smooth noise to color range with natural blending
                 colorIndex = Math.floor(smoothNoise * 8); // 0-7 range
 
-                // Add significant random variation to break up any patterns
-                const randomOffset = (Math.random() - 0.5) * 3; // ±1.5 variation
+                // Add maximum random variation to break up any patterns and seams
+                const randomOffset = (Math.random() - 0.5) * 4; // ±2 variation
                 colorIndex = Math.max(0, Math.min(7, colorIndex + randomOffset));
 
                 // Additional noise-based variation for even more natural look
@@ -612,8 +617,8 @@ class Game3D {
         }
 
         const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
         texture.repeat.set(1, 1); // Single tile for full detail visibility
         texture.generateMipmaps = true; // Enable mipmaps for better performance
 
