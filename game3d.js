@@ -746,27 +746,13 @@ class Game3D {
             this.handleClick(event);
         });
 
-        // Mobile touch support - MOVED TO TOUCHEND TO PREVENT CONTINUOUS FIRING
-        canvas.addEventListener('touchend', (event) => {
-            event.preventDefault();
-            console.log('Touch end detected, touches:', event.changedTouches.length, 'zoom enabled:', this.touchZoomEnabled);
-            // Only handle single touch (ignore multi-touch gestures)
-            if (event.changedTouches.length === 1 && !this.touchZoomEnabled) {
-                const touch = event.changedTouches[0];
-                console.log('Processing single touch move');
-                this.handleTouchMove(touch);
-            }
-        }, { passive: false });
+        // MOBILE TOUCH SUPPORT - COMPREHENSIVE SINGLE LISTENER
+        let touchStartTime = 0;
+        let lastTouchEndTime = 0;
 
-        // Mouse wheel zoom (like WoW)
-        canvas.addEventListener('wheel', (event) => {
-            event.preventDefault();
-            const delta = event.deltaY > 0 ? 0.1 : -0.1;
-            this.setZoom(this.currentZoom + delta);
-        }, { passive: false });
-
-        // Touch zoom for mobile (pinch-to-zoom) - ONLY HANDLES ZOOM
         canvas.addEventListener('touchstart', (event) => {
+            touchStartTime = Date.now();
+            // Handle zoom start for multi-touch
             if (event.touches.length === 2) {
                 event.preventDefault();
                 this.touchZoomEnabled = true;
@@ -776,6 +762,7 @@ class Game3D {
         }, { passive: false });
 
         canvas.addEventListener('touchmove', (event) => {
+            // Handle zoom during multi-touch
             if (this.touchZoomEnabled && event.touches.length === 2) {
                 event.preventDefault();
                 const currentDistance = this.getTouchDistance(event.touches[0], event.touches[1]);
@@ -786,10 +773,44 @@ class Game3D {
         }, { passive: false });
 
         canvas.addEventListener('touchend', (event) => {
-            if (event.touches.length < 2) {
+            const currentTime = Date.now();
+            const timeSinceStart = currentTime - touchStartTime;
+            const timeSinceLastEnd = currentTime - lastTouchEndTime;
+
+            // Prevent rapid-fire touches (debounce)
+            if (timeSinceLastEnd < 200) {
+                console.log('Ignoring rapid touch end');
+                return;
+            }
+
+            // Only handle single touch taps (not multi-touch or long presses)
+            if (event.changedTouches.length === 1 &&
+                !this.touchZoomEnabled &&
+                timeSinceStart < 500 && // Not a long press
+                timeSinceStart > 50) { // Not too short
+
+                event.preventDefault();
+                const touch = event.changedTouches[0];
+
+                console.log('Processing single touch tap at:', touch.clientX, touch.clientY);
+                this.handleTouchMove(touch);
+
+                lastTouchEndTime = currentTime;
+            }
+
+            // Reset zoom state when all touches end
+            if (event.touches.length === 0) {
                 this.touchZoomEnabled = false;
             }
         }, { passive: false });
+
+        // Mouse wheel zoom (like WoW)
+        canvas.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 0.1 : -0.1;
+            this.setZoom(this.currentZoom + delta);
+        }, { passive: false });
+
 
         // No keyboard movement - only click to move
 
@@ -807,16 +828,22 @@ class Game3D {
 
         // Raycast to ground plane for movement destination
         this.raycaster.setFromCamera(this.mouse, this.camera);
+        console.log('Raycaster set from camera with mouse coords:', this.mouse.x.toFixed(3), this.mouse.y.toFixed(3));
 
         // Use plane intersection for reliable click-to-move positioning
         const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Y=0 plane
-            const planeIntersect = new THREE.Vector3();
-            this.raycaster.ray.intersectPlane(plane, planeIntersect);
+        const planeIntersect = new THREE.Vector3();
+        const intersectionResult = this.raycaster.ray.intersectPlane(plane, planeIntersect);
+
+        console.log('Plane intersection result:', intersectionResult);
+        console.log('Plane intersect point:', planeIntersect.x, planeIntersect.y, planeIntersect.z);
 
         let intersects = [];
-            if (planeIntersect && !isNaN(planeIntersect.x) && !isNaN(planeIntersect.y) && !isNaN(planeIntersect.z)) {
-                intersects = [{ point: planeIntersect }];
-            console.log('Click position:', planeIntersect.x, planeIntersect.z);
+        if (planeIntersect && !isNaN(planeIntersect.x) && !isNaN(planeIntersect.y) && !isNaN(planeIntersect.z)) {
+            intersects = [{ point: planeIntersect }];
+            console.log('Valid click position:', planeIntersect.x, planeIntersect.z);
+        } else {
+            console.log('Invalid plane intersection - no valid point found');
         }
 
         if (intersects.length > 0) {
@@ -1013,15 +1040,21 @@ class Game3D {
     }
 
     handleTouchMove(touch) {
-        // Update mouse coordinates for raycasting (same as mousemove handler)
+        // Update mouse coordinates for raycasting (consistent with mouse handling)
         const canvas = document.getElementById('game-canvas');
         const rect = canvas.getBoundingClientRect();
-        this.mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
-        this.mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Store raw coordinates
         this.mouseX = touch.clientX;
         this.mouseY = touch.clientY;
 
-        // Convert touch to mouse coordinates for click handler
+        // Calculate normalized device coordinates (-1 to +1)
+        this.mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+        console.log('Touch coords - raw:', touch.clientX, touch.clientY, 'normalized:', this.mouse.x.toFixed(3), this.mouse.y.toFixed(3));
+
+        // Create fake mouse event for consistency
         const event = {
             clientX: touch.clientX,
             clientY: touch.clientY
