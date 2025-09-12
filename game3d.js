@@ -259,7 +259,6 @@ class Game3D {
 
         // Calculate the exact Y offset needed so feet touch ground at Y=0
         // The feet are positioned at: -(legLength * 0.5) - (legLength * 0.45) - 0.04 from hip
-        const legLength = totalHeight * 0.54; // 0.972
         const feetOffset = (legLength * 0.5) + (legLength * 0.45) + 0.04; // ~0.963
 
         this.player.position.set(0, feetOffset, 0); // Position so feet touch Y=0
@@ -886,7 +885,8 @@ class Game3D {
         this.head.rotation.z = 0;
 
         // Reset vertical position (feet on ground level)
-        const legLength = 1.8 * 0.54; // Same calculation as in createPlayer
+        const totalHeight = 1.8;
+        const legLength = totalHeight * 0.54; // Same calculation as in createPlayer
         const feetOffset = (legLength * 0.5) + (legLength * 0.45) + 0.04;
         this.player.position.y = feetOffset; // Feet at ground level (Y=0)
     }
