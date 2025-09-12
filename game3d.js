@@ -249,6 +249,154 @@ class Game3D {
         this.createWorldBoundaries();
     }
 
+    createTreeBarkTexture() {
+        console.log('Creating tree bark texture...');
+
+        const canvas = document.createElement('canvas');
+        const size = 64;
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+            console.error('Failed to get 2D context for bark texture');
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Create bark pattern
+        const imageData = ctx.createImageData(size, size);
+        const data = imageData.data;
+
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const pixelIndex = (y * size + x) * 4;
+
+                // Create bark-like noise pattern
+                const barkNoise = Math.sin(x * 0.1) * Math.cos(y * 0.15) +
+                                Math.sin(x * 0.3) * Math.cos(y * 0.25) * 0.5;
+
+                const normalizedNoise = (barkNoise + 1) / 2;
+
+                // Base brown colors with variation
+                const baseBrown = [101, 67, 33]; // Dark brown
+                const lightBrown = [139, 69, 19]; // Saddle brown
+
+                // Interpolate between colors based on noise
+                const r = baseBrown[0] + (lightBrown[0] - baseBrown[0]) * normalizedNoise;
+                const g = baseBrown[1] + (lightBrown[1] - baseBrown[1]) * normalizedNoise;
+                const b = baseBrown[2] + (lightBrown[2] - baseBrown[2]) * normalizedNoise;
+
+                // Add some randomness for bark texture
+                const variation = (Math.random() - 0.5) * 20;
+
+                data[pixelIndex] = Math.max(0, Math.min(255, r + variation));
+                data[pixelIndex + 1] = Math.max(0, Math.min(255, g + variation));
+                data[pixelIndex + 2] = Math.max(0, Math.min(255, b + variation));
+                data[pixelIndex + 3] = 255;
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(2, 4); // Vertical bark pattern
+
+        console.log('Tree bark texture created');
+        return texture;
+    }
+
+    createTreeLeafTexture() {
+        console.log('Creating tree leaf texture...');
+
+        const canvas = document.createElement('canvas');
+        const size = 64;
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+            console.error('Failed to get 2D context for leaf texture');
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Create leaf pattern
+        const imageData = ctx.createImageData(size, size);
+        const data = imageData.data;
+
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const pixelIndex = (y * size + x) * 4;
+
+                // Create leaf-like pattern with veins and variation
+                const veinNoise = Math.sin(x * 0.05) * 0.3 + Math.sin(y * 0.08) * 0.2;
+                const detailNoise = Math.sin(x * 0.2) * Math.cos(y * 0.25) * 0.1;
+                const speckleNoise = (Math.random() - 0.5) * 0.05;
+
+                const combinedNoise = veinNoise + detailNoise + speckleNoise;
+                const normalizedNoise = (combinedNoise + 1) / 2;
+
+                // Base green colors
+                const darkGreen = [34, 139, 34];    // Forest green
+                const lightGreen = [50, 205, 50];   // Lime green
+                const midGreen = [107, 142, 35];    // Olive drab
+
+                // Create gradient effect
+                let r, g, b;
+                if (normalizedNoise < 0.4) {
+                    // Dark areas (veins)
+                    r = darkGreen[0];
+                    g = darkGreen[1];
+                    b = darkGreen[2];
+                } else if (normalizedNoise < 0.7) {
+                    // Mid areas
+                    r = midGreen[0];
+                    g = midGreen[1];
+                    b = midGreen[2];
+                } else {
+                    // Light areas
+                    r = lightGreen[0];
+                    g = lightGreen[1];
+                    b = lightGreen[2];
+                }
+
+                // Add subtle variation
+                const variation = (Math.random() - 0.5) * 15;
+
+                data[pixelIndex] = Math.max(0, Math.min(255, r + variation));
+                data[pixelIndex + 1] = Math.max(0, Math.min(255, g + variation));
+                data[pixelIndex + 2] = Math.max(0, Math.min(255, b + variation));
+                data[pixelIndex + 3] = 255;
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        // Add some subtle highlights
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = 'rgba(154, 205, 50, 0.1)';
+        for (let i = 0; i < 8; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const radius = Math.random() * 2 + 1;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(3, 3); // Leaf pattern repeat
+
+        console.log('Tree leaf texture created');
+        return texture;
+    }
+
     createGroundTexture() {
         console.log('Creating enhanced procedural ground texture...');
 
@@ -280,23 +428,19 @@ class Game3D {
             [218, 165, 32],   // Goldenrod (wildflowers)
         ];
 
-        // Seamless tiling noise function for European terrain
-        const noise = (x, y, scale = 0.1) => {
-            // Use smooth interpolation for seamless tiling
-            const smooth = (t) => t * t * (3 - 2 * t);
+        // Organic Age of Empires-style noise function
+        const noise = (x, y, seed = 0) => {
+            // Use multiple noise functions with different characteristics
+            const n1 = Math.sin(x * 0.01 + seed) * Math.cos(y * 0.01 + seed);
+            const n2 = Math.sin(x * 0.03 + seed * 1.7) * Math.cos(y * 0.025 + seed * 2.1);
+            const n3 = Math.sin(x * 0.07 + seed * 3.3) * Math.cos(y * 0.08 + seed * 2.9);
+            const n4 = Math.sin(x * 0.15 + seed * 5.7) * Math.cos(y * 0.12 + seed * 4.1);
 
-            // Create seamless coordinates
-            const u = smooth((x / size) % 1);
-            const v = smooth((y / size) % 1);
+            // Add some fractal-like variation
+            const fractal = Math.sin(x * 0.005 + y * 0.007 + seed) * 0.3;
 
-            // Multiple octaves with different frequencies for natural patterns
-            const n1 = Math.sin(u * scale * Math.PI * 2) * Math.cos(v * scale * Math.PI * 2);
-            const n2 = Math.sin(u * scale * 2.7 * Math.PI * 2) * Math.cos(v * scale * 2.1 * Math.PI * 2) * 0.4;
-            const n3 = Math.sin(u * scale * 5.3 * Math.PI * 2) * Math.cos(v * scale * 4.7 * Math.PI * 2) * 0.2;
-            const n4 = Math.sin(u * scale * 11.1 * Math.PI * 2) * Math.cos(v * scale * 9.7 * Math.PI * 2) * 0.1;
-
-            const n = n1 + n2 + n3 + n4;
-            return (n + 1) / 2; // Normalize to 0-1
+            const combined = n1 * 0.4 + n2 * 0.3 + n3 * 0.2 + n4 * 0.1 + fractal;
+            return (combined + 1) / 2; // Normalize to 0-1
         };
 
         // Generate texture pixel by pixel
@@ -304,36 +448,44 @@ class Game3D {
             for (let x = 0; x < size; x++) {
                 const pixelIndex = (y * size + x) * 4;
 
-                // Multiple noise layers for natural European terrain variation
-                const largeNoise = noise(x, y, 0.03);    // Large terrain features
-                const mediumNoise = noise(x, y, 0.08);   // Medium terrain features
-                const smallNoise = noise(x, y, 0.2);     // Small terrain details
-                const microNoise = noise(x, y, 0.5);     // Micro details
+                // Multiple organic noise layers for Age of Empires-style terrain
+                const terrainNoise = noise(x, y, 0);           // Main terrain variation
+                const detailNoise = noise(x, y, 1000);         // Fine details
+                const colorNoise = noise(x, y, 2000);          // Color variation
+                const textureNoise = noise(x, y, 3000);        // Texture pattern
 
-                // Combine noises with European landscape weights
-                const combinedNoise = largeNoise * 0.4 + mediumNoise * 0.35 + smallNoise * 0.2 + microNoise * 0.05;
+                // Combine with organic weights for natural appearance
+                const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.1 + textureNoise * 0.05;
 
                 // Add organic variation (less random speckles, more natural)
                 const organicVariation = (Math.random() - 0.5) * 0.15;
 
-                // Select base color based on noise - bias toward greens and earth tones
+                // Organic color selection based on terrain characteristics
                 let colorIndex;
-                if (combinedNoise < 0.3) {
-                    // Dark forest areas
-                    colorIndex = Math.floor(Math.random() * 3); // First 3 colors (dark browns)
-                } else if (combinedNoise < 0.7) {
-                    // Mixed meadow/forest
-                    colorIndex = 3 + Math.floor(Math.random() * 3); // Colors 3-5 (olive/earth greens)
+
+                // Use noise to determine terrain type more naturally
+                if (terrainNoise < 0.35) {
+                    // Dark forest/soil areas
+                    colorIndex = Math.floor(terrainNoise * 3); // Colors 0-2 (dark browns)
+                } else if (terrainNoise < 0.65) {
+                    // Mixed forest/meadow
+                    colorIndex = 2 + Math.floor((terrainNoise - 0.35) * 4); // Colors 2-5 (transitional)
                 } else {
-                    // Light meadow areas
-                    colorIndex = 5 + Math.floor(Math.random() * 3); // Colors 5-7 (bright greens)
+                    // Bright meadow/grass areas
+                    colorIndex = 5 + Math.floor((terrainNoise - 0.65) * 3); // Colors 5-7 (bright greens)
+                }
+
+                // Add some randomness for natural variation
+                if (Math.random() < 0.1) { // 10% chance of color variation
+                    colorIndex = Math.max(0, Math.min(7, colorIndex + (Math.random() > 0.5 ? 1 : -1)));
                 }
 
                 const baseColor = baseColors[Math.min(colorIndex, baseColors.length - 1)];
 
-                // Apply natural variation for European landscape
-                const terrainVariation = (combinedNoise - 0.5) * 25; // ±12.5 variation
-                const organicVariationValue = organicVariation * 20; // ±10 organic variation
+                // Apply natural Age of Empires-style variation
+                const terrainVariation = (combinedNoise - 0.5) * 30; // ±15 variation
+                const detailVariation = (detailNoise - 0.5) * 15; // ±7.5 detail variation
+                const organicVariationValue = organicVariation * 25; // ±12.5 organic variation
 
                 // Calculate final RGB values with clamping
                 const r = Math.max(0, Math.min(255, baseColor[0] + terrainVariation + organicVariationValue));
@@ -349,52 +501,6 @@ class Game3D {
         }
 
         // Put the image data on the canvas
-        ctx.putImageData(imageData, 0, 0);
-
-        // Add edge blending for seamless tiling
-        const blendRadius = 8; // Pixels to blend at edges
-        const blendStrength = 0.3; // How much to blend
-
-        for (let y = 0; y < size; y++) {
-            for (let x = 0; x < size; x++) {
-                // Calculate distance from edges
-                const distFromLeft = x;
-                const distFromRight = size - 1 - x;
-                const distFromTop = y;
-                const distFromBottom = size - 1 - y;
-
-                const minDistFromEdge = Math.min(distFromLeft, distFromRight, distFromTop, distFromBottom);
-
-                if (minDistFromEdge < blendRadius) {
-                    const blendFactor = (blendRadius - minDistFromEdge) / blendRadius * blendStrength;
-
-                    // Get current pixel
-                    const pixelIndex = (y * size + x) * 4;
-                    const currentR = data[pixelIndex];
-                    const currentG = data[pixelIndex + 1];
-                    const currentB = data[pixelIndex + 2];
-
-                    // Blend with center value for seamless tiling
-                    const centerX = Math.floor(size / 2);
-                    const centerY = Math.floor(size / 2);
-                    const centerIndex = (centerY * size + centerX) * 4;
-                    const centerR = data[centerIndex];
-                    const centerG = data[centerIndex + 1];
-                    const centerB = data[centerIndex + 2];
-
-                    // Apply blending
-                    const blendedR = currentR * (1 - blendFactor) + centerR * blendFactor;
-                    const blendedG = currentG * (1 - blendFactor) + centerG * blendFactor;
-                    const blendedB = currentB * (1 - blendFactor) + centerB * blendFactor;
-
-                    data[pixelIndex] = blendedR;
-                    data[pixelIndex + 1] = blendedG;
-                    data[pixelIndex + 2] = blendedB;
-                }
-            }
-        }
-
-        // Put the blended image data back
         ctx.putImageData(imageData, 0, 0);
 
         // Add medieval European landscape details
@@ -512,10 +618,21 @@ class Game3D {
     }
 
     createTrees() {
+        // Create tree textures
+        const barkTexture = this.createTreeBarkTexture();
+        const leafTexture = this.createTreeLeafTexture();
+
         const treeGeometry = new THREE.CylinderGeometry(0.5, 0.8, 6);
-        const treeMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+        const treeMaterial = new THREE.MeshLambertMaterial({
+            map: barkTexture,
+            transparent: false
+        });
+
         const leavesGeometry = new THREE.SphereGeometry(3);
-        const leavesMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+        const leavesMaterial = new THREE.MeshLambertMaterial({
+            map: leafTexture,
+            transparent: false
+        });
 
         const minTreeDistance = 8; // Minimum distance between trees
         const maxAttempts = 50; // Max attempts to find valid position
