@@ -30,6 +30,10 @@ class Game3D {
         this.cameraLookAtTarget = null; // For smooth camera look-at interpolation
         this.lastTime = 0; // For delta time calculations
 
+        // Pathfinding state
+        this.pathPoints = [];
+        this.currentPathIndex = 0;
+
         this.init();
         this.setupEventListeners();
         this.animate();
@@ -553,9 +557,10 @@ class Game3D {
             const targetPos = intersects[0].point;
             console.log('Target position:', targetPos.x, targetPos.y, targetPos.z);
 
-            // Check if target position collides with trees
-            if (!this.checkTreeCollisions(targetPos)) {
-                console.log('Cannot move to position - tree collision detected');
+                // Check if we can path to the target (may need to detour around trees)
+            const pathPoints = this.calculatePath(this.player.position, targetPos);
+            if (pathPoints.length === 0) {
+                console.log('Cannot find path to position - blocked by trees');
                 // Still show click effect but don't set movement target
                 this.showClickEffect(targetPos);
                 return;
@@ -563,7 +568,7 @@ class Game3D {
 
             // Visual feedback for click
             this.showClickEffect(targetPos);
-            this.setMovementTarget(targetPos);
+            this.setPathMovement(pathPoints);
         } else {
             console.log('No intersection found!');
 
@@ -574,15 +579,16 @@ class Game3D {
                 this.mouse.y * 50
             );
 
-            // Check if fallback position collides with trees
-            if (!this.checkTreeCollisions(fallbackPos)) {
-                console.log('Cannot move to fallback position - tree collision detected');
+            // Check if we can path to the fallback position
+            const fallbackPath = this.calculatePath(this.player.position, fallbackPos);
+            if (fallbackPath.length === 0) {
+                console.log('Cannot find path to fallback position - blocked by trees');
                 this.showClickEffect(fallbackPos);
                 return;
             }
 
             this.showClickEffect(fallbackPos);
-            this.setMovementTarget(fallbackPos);
+            this.setPathMovement(fallbackPath);
             console.log('Showing fallback click effect at:', fallbackPos);
         }
     }
@@ -838,20 +844,35 @@ class Game3D {
         const distance = this.player.position.distanceTo(this.targetPosition);
 
         if (distance < 0.01) {
-            // TELEPORT TO EXACT CLICK POSITION
-            console.log('Snapping to exact click position');
-            this.player.position.x = this.targetPosition.x;
-            this.player.position.z = this.targetPosition.z;
-            this.player.position.y = this.targetPosition.y; // Keep target Y
-            this.isMoving = false;
-            this.targetPosition = null;
-            this.isWalking = false;
-            this.resetPlayerPose();
-            if (this.destinationMarker) {
-                this.scene.remove(this.destinationMarker);
-                this.destinationMarker = null;
+            // Reached current waypoint
+            console.log('Reached waypoint:', this.currentPathIndex);
+
+            // Move to next waypoint in path
+            this.currentPathIndex++;
+
+            if (this.currentPathIndex < this.pathPoints.length) {
+                // More waypoints to go
+                console.log('Moving to next waypoint:', this.currentPathIndex);
+                this.setMovementTarget(this.pathPoints[this.currentPathIndex]);
+                return;
+            } else {
+                // Reached final destination
+                console.log('Reached final destination');
+                this.player.position.x = this.targetPosition.x;
+                this.player.position.z = this.targetPosition.z;
+                this.player.position.y = this.targetPosition.y; // Keep target Y
+                this.isMoving = false;
+                this.targetPosition = null;
+                this.pathPoints = [];
+                this.currentPathIndex = 0;
+                this.isWalking = false;
+                this.resetPlayerPose();
+                if (this.destinationMarker) {
+                    this.scene.remove(this.destinationMarker);
+                    this.destinationMarker = null;
+                }
+                return;
             }
-            return;
         }
 
         // WORLD-CLASS SMOOTH MOVEMENT: Use delta time for consistent speed across frame rates
@@ -1014,6 +1035,138 @@ class Game3D {
         }
 
         return true; // No collision with trees, allow movement
+    }
+
+    // Pathfinding methods for avoiding trees
+    calculatePath(startPos, targetPos) {
+        // First, try direct path
+        if (this.checkDirectPath(startPos, targetPos)) {
+            return [targetPos.clone()];
+        }
+
+        // If direct path is blocked, find a detour around the nearest tree
+        const detourPoint = this.findDetourPoint(startPos, targetPos);
+        if (detourPoint) {
+            return [detourPoint, targetPos.clone()];
+        }
+
+        // If no detour found, return empty path (can't reach target)
+        return [];
+    }
+
+    checkDirectPath(startPos, targetPos) {
+        // Check if the straight line path is blocked by trees
+        const direction = new THREE.Vector3()
+            .subVectors(targetPos, startPos)
+            .normalize();
+
+        const distance = startPos.distanceTo(targetPos);
+        const steps = Math.max(5, Math.floor(distance / 2)); // Check multiple points along the path
+
+        for (let i = 1; i <= steps; i++) {
+            const t = i / steps;
+            const checkPoint = new THREE.Vector3()
+                .copy(startPos)
+                .add(direction.clone().multiplyScalar(distance * t));
+
+            if (!this.checkTreeCollisions(checkPoint)) {
+                return false; // Path is blocked
+            }
+        }
+
+        return true; // Path is clear
+    }
+
+    findDetourPoint(startPos, targetPos) {
+        // Find the tree that's blocking the direct path
+        const blockingTree = this.findNearestBlockingTree(startPos, targetPos);
+        if (!blockingTree) return null;
+
+        // Calculate detour points around the tree
+        const treePos = new THREE.Vector3(blockingTree.x, 0, blockingTree.z);
+        const treeRadius = 2.5; // Same as collision radius
+        const detourDistance = treeRadius + 3; // Go around the tree
+
+        // Try several detour directions
+        const directions = [
+            new THREE.Vector3(1, 0, 0),   // Right
+            new THREE.Vector3(-1, 0, 0),  // Left
+            new THREE.Vector3(0, 0, 1),   // Forward
+            new THREE.Vector3(0, 0, -1),  // Back
+            new THREE.Vector3(0.7, 0, 0.7),  // Diagonal
+            new THREE.Vector3(-0.7, 0, 0.7),
+            new THREE.Vector3(0.7, 0, -0.7),
+            new THREE.Vector3(-0.7, 0, -0.7)
+        ];
+
+        let bestDetour = null;
+        let bestDistance = Infinity;
+
+        for (const dir of directions) {
+            const detourPoint = new THREE.Vector3()
+                .copy(treePos)
+                .add(dir.clone().multiplyScalar(detourDistance));
+
+            // Check if this detour point is reachable and closer to target
+            if (this.checkDirectPath(startPos, detourPoint) &&
+                this.checkDirectPath(detourPoint, targetPos)) {
+
+                const detourToTarget = detourPoint.distanceTo(targetPos);
+                if (detourToTarget < bestDistance) {
+                    bestDistance = detourToTarget;
+                    bestDetour = detourPoint;
+                }
+            }
+        }
+
+        return bestDetour;
+    }
+
+    findNearestBlockingTree(startPos, targetPos) {
+        if (!this.treePositions) return null;
+
+        const direction = new THREE.Vector3()
+            .subVectors(targetPos, startPos)
+            .normalize();
+
+        const distance = startPos.distanceTo(targetPos);
+        let nearestTree = null;
+        let nearestDistance = Infinity;
+
+        // Check all trees to find which one is blocking the path
+        for (const treePos of this.treePositions) {
+            // Project tree position onto the path line
+            const toTree = new THREE.Vector3(treePos.x - startPos.x, 0, treePos.z - startPos.z);
+            const projection = toTree.dot(direction);
+            const projectedPoint = new THREE.Vector3()
+                .copy(startPos)
+                .add(direction.clone().multiplyScalar(projection));
+
+            // Check if tree is close to the path
+            const treeToPath = Math.sqrt(
+                Math.pow(treePos.x - projectedPoint.x, 2) +
+                Math.pow(treePos.z - projectedPoint.z, 2)
+            );
+
+            if (treeToPath < 4 && projection > 0 && projection < distance) {
+                const distToStart = projectedPoint.distanceTo(startPos);
+                if (distToStart < nearestDistance) {
+                    nearestDistance = distToStart;
+                    nearestTree = treePos;
+                }
+            }
+        }
+
+        return nearestTree;
+    }
+
+    setPathMovement(pathPoints) {
+        this.pathPoints = pathPoints;
+        this.currentPathIndex = 0;
+
+        if (pathPoints.length > 0) {
+            this.setMovementTarget(pathPoints[0]);
+        }
     }
 
     updateMinimap() {
