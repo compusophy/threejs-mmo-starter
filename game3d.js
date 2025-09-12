@@ -238,9 +238,9 @@ class Game3D {
         this.ground = ground;
 
         // Add some basic structures
-        this.createBuildings();
+        // this.createBuildings(); // REMOVED: Buildings disabled
         this.createTrees();
-        this.createWater();
+        // this.createWater(); // REMOVED: Water disabled
 
         // Add world boundaries (walls)
         this.createWorldBoundaries();
