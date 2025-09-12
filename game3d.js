@@ -1853,7 +1853,7 @@ class Game3D {
     updateCamera() {
         // Only update camera position for isometric mode
         if (this.currentCameraMode === 'isometric') {
-        // ISOMETRIC CAMERA: Follow player from south at an angle
+            // ISOMETRIC CAMERA: Follow player from south at an angle
         const cameraHeight = 45;
         const cameraDistance = 45;
 
