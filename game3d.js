@@ -398,6 +398,21 @@ class Game3D {
         return texture;
     }
 
+    // Organic Age of Empires-style noise function (reusable class method)
+    noise(x, y, seed = 0) {
+        // Use multiple noise functions with different characteristics
+        const n1 = Math.sin(x * 0.01 + seed) * Math.cos(y * 0.01 + seed);
+        const n2 = Math.sin(x * 0.03 + seed * 1.7) * Math.cos(y * 0.025 + seed * 2.1);
+        const n3 = Math.sin(x * 0.07 + seed * 3.3) * Math.cos(y * 0.08 + seed * 2.9);
+        const n4 = Math.sin(x * 0.15 + seed * 5.7) * Math.cos(y * 0.12 + seed * 4.1);
+
+        // Add some fractal-like variation
+        const fractal = Math.sin(x * 0.005 + y * 0.007 + seed) * 0.3;
+
+        const combined = n1 * 0.4 + n2 * 0.3 + n3 * 0.2 + n4 * 0.1 + fractal;
+        return (combined + 1) / 2; // Normalize to 0-1
+    }
+
     applyVertexNoiseColoring(geometry) {
         console.log('Applying vertex-based noise coloring to ground...');
 
@@ -420,10 +435,6 @@ class Game3D {
         for (let i = 0; i < positions.length; i += 3) {
             const x = positions[i];     // X coordinate (-100 to 100)
             const z = positions[i + 2]; // Z coordinate (-100 to 100)
-
-            // Convert to 0-1 range for noise calculation
-            const u = (x + 100) / 200; // 0 to 1
-            const v = (z + 100) / 200; // 0 to 1
 
             // Generate multiple noise layers for organic variation
             const terrainNoise = this.noise(x * 0.01, z * 0.01, 0);
@@ -505,20 +516,6 @@ class Game3D {
             [218, 165, 32],   // Goldenrod (wildflowers)
         ];
 
-        // Organic Age of Empires-style noise function
-        const noise = (x, y, seed = 0) => {
-            // Use multiple noise functions with different characteristics
-            const n1 = Math.sin(x * 0.01 + seed) * Math.cos(y * 0.01 + seed);
-            const n2 = Math.sin(x * 0.03 + seed * 1.7) * Math.cos(y * 0.025 + seed * 2.1);
-            const n3 = Math.sin(x * 0.07 + seed * 3.3) * Math.cos(y * 0.08 + seed * 2.9);
-            const n4 = Math.sin(x * 0.15 + seed * 5.7) * Math.cos(y * 0.12 + seed * 4.1);
-
-            // Add some fractal-like variation
-            const fractal = Math.sin(x * 0.005 + y * 0.007 + seed) * 0.3;
-
-            const combined = n1 * 0.4 + n2 * 0.3 + n3 * 0.2 + n4 * 0.1 + fractal;
-            return (combined + 1) / 2; // Normalize to 0-1
-        };
 
         // Generate texture pixel by pixel
         for (let y = 0; y < size; y++) {
@@ -526,10 +523,10 @@ class Game3D {
                 const pixelIndex = (y * size + x) * 4;
 
                 // Multiple organic noise layers for Age of Empires-style terrain
-                const terrainNoise = noise(x, y, 0);           // Main terrain variation
-                const detailNoise = noise(x, y, 1000);         // Fine details
-                const colorNoise = noise(x, y, 2000);          // Color variation
-                const textureNoise = noise(x, y, 3000);        // Texture pattern
+                const terrainNoise = this.noise(x, y, 0);      // Main terrain variation
+                const detailNoise = this.noise(x, y, 1000);    // Fine details
+                const colorNoise = this.noise(x, y, 2000);     // Color variation
+                const textureNoise = this.noise(x, y, 3000);   // Texture pattern
 
                 // Combine with organic weights for natural appearance
                 const combinedNoise = terrainNoise * 0.6 + detailNoise * 0.25 + colorNoise * 0.1 + textureNoise * 0.05;
