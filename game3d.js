@@ -124,7 +124,6 @@ class Game3D {
         this.moveSpeed = 0.15; // Increased for more responsive movement
         this.destinationMarker = null;
         this.waypointMarkers = []; // Array to store intermediate waypoint markers
-        this.pathLine = null; // Visual path line connecting waypoints
         this.cameraLookAtTarget = null; // For smooth camera look-at interpolation
         this.lastTime = 0; // For delta time calculations
 
@@ -246,6 +245,69 @@ class Game3D {
         // Add world boundaries (walls)
         this.createWorldBoundaries();
     }
+
+    createGroundTexture() {
+        console.log('Creating simple brown texture...');
+
+        // Create a simple solid brown texture first to test
+        const canvas = document.createElement('canvas');
+        const size = 64; // Small size for testing
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext('2d');
+        console.log('Canvas created:', canvas, 'Context:', ctx);
+
+        if (!ctx) {
+            console.error('Failed to get 2D context');
+            return this.createFallbackTexture();
+        }
+
+        // Fill with lighter brown color for better visibility
+        ctx.fillStyle = '#CD853F'; // Peru (lighter brown)
+        ctx.fillRect(0, 0, size, size);
+
+        // Add some variation with slightly darker brown
+        ctx.fillStyle = '#BC8F8F'; // Rosy brown
+        for (let i = 0; i < 20; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const w = Math.random() * 8 + 2;
+            const h = Math.random() * 8 + 2;
+            ctx.fillRect(x, y, w, h);
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(8, 8); // More repeats for testing
+        texture.generateMipmaps = false;
+
+        console.log('Simple brown texture created:', texture);
+        return texture;
+
+    }
+
+    addTerrainHeightVariation(geometry) {
+        const positions = geometry.attributes.position.array;
+
+        // Simple terrain variation without complex noise
+        for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i];
+            const z = positions[i + 2];
+
+            // Simple sinusoidal variation for gentle rolling terrain
+            const elevation = Math.sin(x * 0.01) * Math.cos(z * 0.01) * 0.5;
+
+            // Apply subtle elevation to Y coordinate
+            positions[i + 1] = elevation;
+        }
+
+        // Update geometry after modifying vertices
+        geometry.attributes.position.needsUpdate = true;
+        geometry.computeVertexNormals(); // Recalculate normals for proper lighting
+    }
+
 
 
     createBuildings() {
@@ -773,7 +835,6 @@ class Game3D {
                 console.log('Cannot find any path to position - completely surrounded');
                 // Clear any existing path visuals since no path was found
                 this.clearWaypointMarkers();
-                this.clearPathLine();
                 // Only block if absolutely no path exists
                 this.showClickEffect(targetPos);
                 return;
@@ -798,7 +859,6 @@ class Game3D {
                 console.log('Cannot find any path to fallback position - completely surrounded');
                 // Clear any existing path visuals since no path was found
                 this.clearWaypointMarkers();
-                this.clearPathLine();
                 this.showClickEffect(fallbackPos);
                 return;
             }
@@ -882,8 +942,8 @@ class Game3D {
         const feetOffset = torsoCenterY + hipToThighCenter + thighToKnee + kneeToCalfCenter + calfToFoot;
         this.targetPosition.y = feetOffset; // Keep feet at ground level
 
-        // Create or update destination marker
-        this.createDestinationMarker(this.targetPosition);
+        // DON'T create destination markers for intermediate waypoints
+        // Only the final destination should have a marker (handled in setPathMovement)
 
         // Start moving towards target
         this.isMoving = true;
@@ -891,12 +951,12 @@ class Game3D {
     }
 
     createWaypointMarker(position, isFinalDestination = false) {
-        // Create new marker - different styles for intermediate vs final destination
-        const markerGeometry = new THREE.CircleGeometry(isFinalDestination ? 0.3 : 0.2, 16);
+        // Create new marker - only final destination now, make it smaller
+        const markerGeometry = new THREE.CircleGeometry(0.15, 12); // Much smaller size for destination marker
         const markerMaterial = new THREE.MeshBasicMaterial({
-            color: isFinalDestination ? 0xFFFF00 : 0xFFA500, // Yellow for final, Orange for intermediate
+            color: 0xFFFF00, // Yellow for destination
             transparent: true,
-            opacity: isFinalDestination ? 0.8 : 0.6, // More opaque for final destination
+            opacity: 0.8, // Good opacity for destination
             side: THREE.DoubleSide
         });
 
@@ -924,98 +984,6 @@ class Game3D {
         this.waypointMarkers = [];
     }
 
-    createPathLine(pathPoints) {
-        // Clear existing path line
-        this.clearPathLine();
-
-        if (pathPoints.length === 0) return; // No path to draw
-
-        // Create the complete path including current player position
-        const fullPath = [this.player.position.clone(), ...pathPoints];
-
-        // Create geometry for the path line
-        const geometry = new THREE.BufferGeometry();
-        const positions = [];
-
-        // Add points for the dotted line
-        for (let i = 0; i < fullPath.length - 1; i++) {
-            const start = fullPath[i];
-            const end = fullPath[i + 1];
-
-            // Create dotted line segments
-            const distance = start.distanceTo(end);
-            const segments = Math.max(10, Math.floor(distance / 0.5)); // More segments for longer distances
-
-            for (let j = 0; j <= segments; j++) {
-                const t = j / segments;
-                const point = new THREE.Vector3().lerpVectors(start, end, t);
-                positions.push(point.x, 0.02, point.z); // Slightly above ground
-            }
-        }
-
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-
-        // Create material for dotted yellow line
-        const material = new THREE.LineDashedMaterial({
-            color: 0xFFFF00, // Yellow to match destination marker
-            dashSize: 0.3,
-            gapSize: 0.2,
-            opacity: 0.8,
-            transparent: true,
-        });
-
-        // Create the line
-        this.pathLine = new THREE.Line(geometry, material);
-        this.pathLine.computeLineDistances(); // Required for dashed lines
-
-        // Add to scene
-        this.scene.add(this.pathLine);
-    }
-
-    updatePathLine() {
-        // Don't update if no path line exists or no path points
-        if (!this.pathLine || this.pathPoints.length === 0) return;
-
-        // Only show path to the immediate next waypoint (not all remaining waypoints)
-        const currentTarget = this.currentPathIndex < this.pathPoints.length
-            ? this.pathPoints[this.currentPathIndex]
-            : null;
-
-        if (!currentTarget) return;
-
-        // Create path from current position to next waypoint only
-        const fullPath = [this.player.position.clone(), currentTarget];
-
-        // Update the geometry positions
-        const positions = [];
-        const start = fullPath[0];
-        const end = fullPath[1];
-
-        // Create dotted line segments from player to current target
-        const distance = start.distanceTo(end);
-        const segments = Math.max(15, Math.floor(distance / 0.3)); // More segments for smoother line
-
-        // Create points from target back to player so dashes appear from player forward
-        for (let j = segments; j >= 0; j--) {
-            const t = j / segments;
-            const point = new THREE.Vector3().lerpVectors(start, end, t);
-            positions.push(point.x, 0.02, point.z);
-        }
-
-        // Update the geometry
-        this.pathLine.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        this.pathLine.computeLineDistances(); // Required for dashed lines
-    }
-
-    clearPathLine() {
-        // Remove existing path line from scene
-        if (this.pathLine) {
-            this.scene.remove(this.pathLine);
-            this.pathLine.geometry.dispose();
-            this.pathLine.material.dispose();
-            this.pathLine = null;
-        }
-    }
 
     createDestinationMarker(position) {
         // Legacy method - now uses waypoint marker system
@@ -1037,15 +1005,7 @@ class Game3D {
             }
         });
 
-        // Update the path line dynamically to show from current position
-        if (this.pathPoints.length > 0) {
-            this.updatePathLine();
-        }
 
-        // Animate the path line if it exists
-        if (this.pathLine) {
-            this.pathLine.material.opacity = 0.7 + Math.sin(Date.now() * 0.003) * 0.2;
-        }
     }
 
     updateDestinationMarker() {
@@ -1220,9 +1180,8 @@ class Game3D {
                 this.currentPathIndex = 0;
                 this.isWalking = false;
                 this.resetPlayerPose();
-                // Clear all waypoint markers and path line when reaching final destination
+                // Clear all waypoint markers when reaching final destination
                 this.clearWaypointMarkers();
-                this.clearPathLine();
                 return;
             }
         }
@@ -1610,19 +1569,13 @@ class Game3D {
         this.pathPoints = pathPoints;
         this.currentPathIndex = 0;
 
-        // Clear existing waypoint markers and path line
+        // Clear existing waypoint markers
         this.clearWaypointMarkers();
-        this.clearPathLine();
 
         if (pathPoints.length > 0) {
-            // Create markers for all waypoints
-            for (let i = 0; i < pathPoints.length; i++) {
-                const isFinalDestination = (i === pathPoints.length - 1);
-                this.createWaypointMarker(pathPoints[i], isFinalDestination);
-            }
-
-            // Create the visual path line connecting all waypoints
-            this.createPathLine(pathPoints);
+            // Only create marker for the final destination
+            const finalDestination = pathPoints[pathPoints.length - 1];
+            this.createWaypointMarker(finalDestination, true);
 
             this.setMovementTarget(pathPoints[0]);
         }

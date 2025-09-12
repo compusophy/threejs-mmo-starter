@@ -705,8 +705,8 @@
 /* Minimap - Square container for square world */
 #minimap {
     position: fixed;
-    top: 10px;
-    right: 10px;
+    top: 0;
+    right: 0;
     width: 150px;
     height: 150px;
     background: rgba(0, 0, 0, 0.7);
@@ -724,11 +724,10 @@
 
 .minimap-player {
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: #FFD700;
     border-radius: 0;
-    border: 2px solid #FFFFFF;
 }
 
 /* FORCE SQUARE CORNERS ON ALL MINIMAP ELEMENTS */
@@ -775,6 +774,8 @@
         display: block; /* Show minimap on all screens */
         width: 150px;
         height: 150px;
+        top: 0;
+        right: 0;
         margin: 0;
     }
 }
