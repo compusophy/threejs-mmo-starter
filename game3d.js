@@ -53,9 +53,9 @@ class Game3D {
             1000
         );
 
-        // TOP-DOWN CAMERA: Shows square world instead of diamond
-        this.camera.position.set(0, 50, 0); // Directly above center
-        this.camera.lookAt(0, 0, 0); // Looking down at origin
+        // ISOMETRIC CAMERA: View from south at an angle
+        this.camera.position.set(0, 45, 45); // Position south of origin, elevated
+        this.camera.lookAt(0, 0, 0); // Looking at origin from isometric angle
 
         // Renderer setup
         this.renderer = new THREE.WebGLRenderer({
@@ -120,8 +120,6 @@ class Game3D {
         ground.userData = { isGround: true, type: 'ground' };
         this.scene.add(ground);
 
-        // Add grid lines for isometric feel
-        this.createGrid();
 
         // Store ground reference for raycasting
         this.ground = ground;
@@ -135,32 +133,6 @@ class Game3D {
         this.createWorldBoundaries();
     }
 
-    createGrid() {
-        const gridSize = 200;
-        const gridDivisions = 40;
-        const gridStep = gridSize / gridDivisions;
-
-        // Create grid lines
-        for (let i = 0; i <= gridDivisions; i++) {
-            // Horizontal lines
-            const hGeometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(-gridSize/2, 0.01, -gridSize/2 + i * gridStep),
-                new THREE.Vector3(gridSize/2, 0.01, -gridSize/2 + i * gridStep)
-            ]);
-            const hMaterial = new THREE.LineBasicMaterial({ color: 0x654321, opacity: 0.05, transparent: true });
-            const hLine = new THREE.Line(hGeometry, hMaterial);
-            this.scene.add(hLine);
-
-            // Vertical lines
-            const vGeometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(-gridSize/2 + i * gridStep, 0.01, -gridSize/2),
-                new THREE.Vector3(-gridSize/2 + i * gridStep, 0.01, gridSize/2)
-            ]);
-            const vMaterial = new THREE.LineBasicMaterial({ color: 0x654321, opacity: 0.05, transparent: true });
-            const vLine = new THREE.Line(vGeometry, vMaterial);
-            this.scene.add(vLine);
-        }
-    }
 
     createBuildings() {
         // Lumbridge Castle
@@ -438,12 +410,14 @@ class Game3D {
 
         this.scene.add(this.player);
 
+
         // Animation properties with realistic timing
         this.walkCycle = 0;
         this.isWalking = false;
         this.stepFrequency = 2; // Steps per second at normal walking speed
         this.armSwingMultiplier = 0.8; // Arms swing less than legs
     }
+
 
     // Removed createHUD - no player stats modal
 
@@ -637,12 +611,12 @@ class Game3D {
             this.scene.remove(this.destinationMarker);
         }
 
-        // Create new marker - simple circle at exact click position
-        const markerGeometry = new THREE.CircleGeometry(0.3, 16);
+        // Create new marker - smaller yellow circle at exact click position
+        const markerGeometry = new THREE.CircleGeometry(0.2, 16);
         const markerMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00FF00,
+            color: 0xFFFF00,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.7,
             side: THREE.DoubleSide
         });
 
@@ -918,21 +892,22 @@ class Game3D {
     }
 
     updateCamera() {
-        // TOP-DOWN CAMERA: Follow player from above
-        const cameraHeight = 50;
+        // ISOMETRIC CAMERA: Follow player from south at an angle
+        const cameraHeight = 45;
+        const cameraDistance = 45;
 
-        // Position camera directly above player
+        // Position camera south of player, maintaining isometric angle
         const idealPosition = new THREE.Vector3(
-            this.player.position.x,      // Same X as player
-            cameraHeight,                // Fixed height above
-            this.player.position.z       // Same Z as player
+            this.player.position.x,           // Same X as player
+            cameraHeight,                     // Fixed height above
+            this.player.position.z + cameraDistance  // South of player
         );
 
         // Smooth camera following
         const lerpFactor = this.isMoving ? 0.15 : 0.1;
         this.camera.position.lerp(idealPosition, lerpFactor);
 
-        // Look down at player position
+        // Look at player position from isometric angle
         const lookAtTarget = new THREE.Vector3(
             this.player.position.x,     // Look at player's X
             0,                         // Look at ground level
