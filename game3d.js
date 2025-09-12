@@ -746,22 +746,16 @@ class Game3D {
             this.handleClick(event);
         });
 
-        // Mobile touch support
-        document.addEventListener('touchstart', (event) => {
+        // Mobile touch support - MOVED TO TOUCHEND TO PREVENT CONTINUOUS FIRING
+        canvas.addEventListener('touchend', (event) => {
             event.preventDefault();
-            if (event.touches.length === 1) {
-                // Single touch = move
-                const touch = event.touches[0];
+            console.log('Touch end detected, touches:', event.changedTouches.length, 'zoom enabled:', this.touchZoomEnabled);
+            // Only handle single touch (ignore multi-touch gestures)
+            if (event.changedTouches.length === 1 && !this.touchZoomEnabled) {
+                const touch = event.changedTouches[0];
+                console.log('Processing single touch move');
                 this.handleTouchMove(touch);
-            } else if (event.touches.length === 2) {
-                // Two finger touch = interact
-                const touch = event.touches[0];
-                this.handleTouchInteract(touch);
             }
-        }, { passive: false });
-
-        document.addEventListener('touchend', (event) => {
-            event.preventDefault();
         }, { passive: false });
 
         // Mouse wheel zoom (like WoW)
@@ -771,7 +765,7 @@ class Game3D {
             this.setZoom(this.currentZoom + delta);
         }, { passive: false });
 
-        // Touch zoom for mobile (pinch-to-zoom)
+        // Touch zoom for mobile (pinch-to-zoom) - ONLY HANDLES ZOOM
         canvas.addEventListener('touchstart', (event) => {
             if (event.touches.length === 2) {
                 event.preventDefault();
