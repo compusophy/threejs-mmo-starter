@@ -1170,24 +1170,24 @@ class Game3D {
         this.axe.add(this.axeHandle);
         this.axe.add(this.axeHead);
 
-        // FORCE RIGHT HAND POSITIONING - make it OBVIOUSLY in right hand
+        // LEFT HAND POSITIONING - put axe in left hand
         // Handle geometry: cylinder from y=-0.4 to y=0.4 (centered)
         // Head positioned at y=0.4 (top of handle)
         // Player grips at y=0 (middle of handle) for clear wooden grip
-        // Use POSITIVE X value to force it to the RIGHT side of the body
-        this.axe.position.set(0.15, 0, 0.2); // Grip middle of wooden handle, CLEARLY RIGHT
+        // Use NEGATIVE X value to put it on the LEFT side of the body
+        this.axe.position.set(-0.15, 0, 0.2); // Grip middle of wooden handle, LEFT side
 
-        // Rotate axe for natural RIGHT-handed holding position
+        // Rotate axe for natural LEFT-handed holding position
         // X: downward angle so handle extends down, head extends up/forward
-        // Y: rotation to swing it to the right side
+        // Y: rotation to swing it to the left side
         // Z: inward rotation toward body
-        this.axe.rotation.set(-0.4, 0.4, -0.2); // Force right-handed axe grip
+        this.axe.rotation.set(-0.4, -0.4, 0.2); // Left-handed axe grip
 
-        // VERIFICATION: Add axe to RIGHT hand (not left!)
-        console.log('Adding axe to RIGHT hand:', this.rightHand);
-        this.rightHand.add(this.axe);
+        // VERIFICATION: Add axe to LEFT hand
+        console.log('Adding axe to LEFT hand:', this.leftHand);
+        this.leftHand.add(this.axe);
 
-        console.log('Woodcutting axe created and attached to right hand');
+        console.log('Woodcutting axe created and attached to LEFT hand');
     }
 
     // Removed createHUD - no player stats modal
