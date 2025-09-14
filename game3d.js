@@ -1170,18 +1170,18 @@ class Game3D {
         this.axe.add(this.axeHandle);
         this.axe.add(this.axeHead);
 
-        // PUT AXE IN THE OTHER HAND - switch sides
+        // FLIP AXE ORIENTATION - hold by the HEAD end, not handle end
         // Handle geometry: cylinder from y=-0.4 to y=0.4 (centered)
         // Head positioned at y=0.4 (top of handle)
-        // Player grips at y=0 (middle of handle) for clear wooden grip
+        // Player grips at y=0.3 (near head) so handle extends DOWNWARD
         // Use NEGATIVE X value to put it on the OPPOSITE side
-        this.axe.position.set(-0.15, 0, 0.2); // Grip middle of wooden handle, OTHER side
+        this.axe.position.set(-0.15, -0.3, 0.2); // Grip near HEAD of axe, OTHER side
 
-        // Rotate axe for natural holding position on the other side
+        // Rotate axe so HEAD extends forward, HANDLE extends backward/down
         // X: downward angle so handle extends down, head extends up/forward
         // Y: rotation to swing it to the other side
         // Z: inward rotation toward body
-        this.axe.rotation.set(-0.4, -0.4, 0.2); // Other side axe grip
+        this.axe.rotation.set(-0.7, -0.4, 0.2); // Flipped orientation - head forward
 
         // VERIFICATION: Add axe to the OTHER hand
         console.log('Adding axe to OTHER hand:', this.leftHand);
