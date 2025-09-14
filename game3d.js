@@ -1175,19 +1175,17 @@ class Game3D {
         // Head positioned at y=0.4 (top of handle)
         // Player grips at y=0.3 (near head) so handle extends DOWNWARD
         // Use NEGATIVE X value to put it on the OPPOSITE side
-        this.axe.position.set(-0.15, -0.3, 0.2); // Grip near HEAD of axe, OTHER side
+        this.axe.position.set(-0.15, 0, 0.2); // Grip middle of handle (wood), LEFT side
 
-        // Rotate axe so HEAD extends forward, HANDLE extends backward/down
-        // X: downward angle so handle extends down, head extends up/forward
-        // Y: rotation to swing it to the other side
-        // Z: inward rotation toward body
-        this.axe.rotation.set(-0.7, -0.4, 0.2); // Flipped orientation - head forward
+        // Natural left-handed holding rotation
+        // X: slight downward angle, Y: swing to left side, Z: slight inward rotation
+        this.axe.rotation.set(-0.4, -0.4, 0.2); // Left-handed axe grip (by handle)
 
         // VERIFICATION: Add axe to the OTHER hand
-        console.log('Adding axe to OTHER hand:', this.leftHand);
+        console.log('Adding axe to LEFT hand:', this.leftHand);
         this.leftHand.add(this.axe);
 
-        console.log('Woodcutting axe created and attached to OTHER hand');
+        console.log('Woodcutting axe created and attached to LEFT hand (gripping handle)');
     }
 
     // Removed createHUD - no player stats modal
