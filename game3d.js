@@ -1170,22 +1170,21 @@ class Game3D {
         this.axe.add(this.axeHandle);
         this.axe.add(this.axeHead);
 
-        // FLIP AXE ORIENTATION - hold by the HEAD end, not handle end
+        // RIGHT HAND - grip the WOODEN HANDLE near the base (not the blade)
         // Handle geometry: cylinder from y=-0.4 to y=0.4 (centered)
         // Head positioned at y=0.4 (top of handle)
-        // Player grips at y=0.3 (near head) so handle extends DOWNWARD
-        // Use NEGATIVE X value to put it on the OPPOSITE side
-        this.axe.position.set(-0.15, 0, 0.2); // Grip middle of handle (wood), LEFT side
+        // Player grips near y=-0.35 (base end) so the blade is far from the hand
+        this.axe.position.set(0.08, 0.35, 0.15); // RIGHT side, align base of handle to hand
 
-        // Natural left-handed holding rotation
-        // X: slight downward angle, Y: swing to left side, Z: slight inward rotation
-        this.axe.rotation.set(-0.4, -0.4, 0.2); // Left-handed axe grip (by handle)
+        // Natural right-handed holding rotation
+        // X: slight downward angle, Y: swing to right side, Z: slight inward rotation
+        this.axe.rotation.set(-0.5, 0.3, -0.2); // Right-handed axe grip (by handle, base)
 
-        // VERIFICATION: Add axe to the OTHER hand
-        console.log('Adding axe to LEFT hand:', this.leftHand);
-        this.leftHand.add(this.axe);
+        // Attach to RIGHT hand
+        console.log('Adding axe to RIGHT hand:', this.rightHand);
+        this.rightHand.add(this.axe);
 
-        console.log('Woodcutting axe created and attached to LEFT hand (gripping handle)');
+        console.log('Woodcutting axe created and attached to RIGHT hand (gripping handle near base)');
     }
 
     // Removed createHUD - no player stats modal
