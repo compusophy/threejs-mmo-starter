@@ -1137,8 +1137,10 @@ class Game3D {
         this.rightFoot.castShadow = true;
         this.rightCalf.add(this.rightFoot);
 
-        this.scene.add(this.player);
+        // === WOODCUTTING AXE ===
+        this.createWoodcuttingAxe();
 
+        this.scene.add(this.player);
 
         // Animation properties with realistic timing
         this.walkCycle = 0;
@@ -1147,6 +1149,40 @@ class Game3D {
         this.armSwingMultiplier = 0.8; // Arms swing less than legs
     }
 
+    createWoodcuttingAxe() {
+        // Create axe handle (long thin cylinder)
+        const handleGeometry = new THREE.CylinderGeometry(0.02, 0.025, 0.8, 8);
+        const handleMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown wood color
+        this.axeHandle = new THREE.Mesh(handleGeometry, handleMaterial);
+        this.axeHandle.castShadow = true;
+
+        // Create axe head (flat metal blade)
+        const headGeometry = new THREE.BoxGeometry(0.15, 0.08, 0.02);
+        const headMaterial = new THREE.MeshLambertMaterial({ color: 0xC0C0C0 }); // Silver metal color
+        this.axeHead = new THREE.Mesh(headGeometry, headMaterial);
+        this.axeHead.castShadow = true;
+
+        // Position axe head at the end of the handle
+        this.axeHead.position.set(0, 0.4, 0.02); // Slightly above and forward
+
+        // Create axe group and add parts
+        this.axe = new THREE.Group();
+        this.axe.add(this.axeHandle);
+        this.axe.add(this.axeHead);
+
+        // Position axe in right hand
+        // Right hand is at: torso center + shoulder offset + upper arm + elbow + lower arm + hand
+        // Approximate position: (0.26, -0.25, 0) relative to torso
+        this.axe.position.set(0.08, -0.35, 0.15); // Grip position in hand
+
+        // Rotate axe for natural holding position
+        this.axe.rotation.set(-0.3, 0, -0.2); // Slight angle for realistic grip
+
+        // Add axe to right hand
+        this.rightHand.add(this.axe);
+
+        console.log('Woodcutting axe created and attached to right hand');
+    }
 
     // Removed createHUD - no player stats modal
 
