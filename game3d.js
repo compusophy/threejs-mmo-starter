@@ -1163,22 +1163,27 @@ class Game3D {
         this.axeHead.castShadow = true;
 
         // Position axe head at the end of the handle
-        this.axeHead.position.set(0, 0.4, 0.02); // Slightly above and forward
+        this.axeHead.position.set(0, 0.4, 0.02); // Top of handle, slightly forward
 
         // Create axe group and add parts
         this.axe = new THREE.Group();
         this.axe.add(this.axeHandle);
         this.axe.add(this.axeHead);
 
-        // Position axe in right hand
-        // Right hand is at: torso center + shoulder offset + upper arm + elbow + lower arm + hand
-        // Approximate position: (0.26, -0.25, 0) relative to torso
-        this.axe.position.set(0.08, -0.35, 0.15); // Grip position in hand
+        // Position axe in RIGHT hand - hold by the base of handle (near head)
+        // Handle geometry: cylinder from y=-0.4 to y=0.4 (centered)
+        // Head positioned at y=0.4 (top of handle)
+        // Player grips at y=0.3 (near where head attaches to handle)
+        // So position axe so that handle's y=0.3 is at hand's origin
+        this.axe.position.set(0.05, -0.3, 0.2); // Grip at base of handle near head
 
-        // Rotate axe for natural holding position
-        this.axe.rotation.set(-0.3, 0, -0.2); // Slight angle for realistic grip
+        // Rotate axe for natural right-handed holding position
+        // X: downward angle so handle extends down, head extends forward/up
+        // Y: slight rotation for natural grip
+        // Z: inward rotation toward body
+        this.axe.rotation.set(-0.7, 0.1, -0.2); // Natural axe-holding angle
 
-        // Add axe to right hand
+        // Add axe to RIGHT hand
         this.rightHand.add(this.axe);
 
         console.log('Woodcutting axe created and attached to right hand');
