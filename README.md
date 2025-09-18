@@ -17,13 +17,14 @@ A modern 3D isometric exploration game built with Three.js, featuring smooth cli
 - **Atmospheric Effects**: Sky blue background with distance fog
 - **Interactive World**: Buildings, trees, water features, and boundary walls
 - **Smooth Animations**: Fluid walking animation synchronized with movement
+- **In-World Printer Station**: 3D image generation station with visible prompts and output display
 
 ### 🎯 Controls & Interaction
 - **Mouse Controls**: Left-click to move, mouse wheel zoom, right-click interaction
 - **Touch Support**: Full mobile compatibility with pinch-to-zoom
 - **Camera Zoom**: Smooth zoom system (30% to 300% zoom range)
 - **Responsive Design**: Adapts to different screen sizes
-- **Keyboard Shortcuts**: **W** (Workbench), **I** (Item Loader), **C** (Character Loader)
+- **In-World Interactions**: Click on interactive objects (Printer, Workbench, Item Loader, Character Loader) to access tools
 
 ### 🏗️ World Architecture
 - **Large Ground Plane**: 200x200 unit brown terrain
@@ -61,11 +62,18 @@ Simply open `index.html` in your web browser (some features may not work due to 
 - **Camera Following**: Automatically follows player movement
 - **Isometric View**: Fixed south-facing isometric perspective
 
+### In-World Interactions
+- **Printer Station**: Click on the printer to generate images using AI
+- **Workbench**: Click on the workbench to create and improve 3D objects
+- **Item Loader**: Click on the item loader to equip items from your library
+- **Character Loader**: Click on the character loader to switch player models
+
 ### Advanced Features
 - **Obstacle Avoidance**: Click anywhere - the system finds the best path
 - **Smooth Animation**: Character walks with realistic arm/leg synchronization
 - **Collision Detection**: Cannot walk through buildings or trees
 - **World Boundaries**: Invisible walls keep you within the game world
+- **AI Image Generation**: Generate images directly in the 3D world using the printer station
 
 ## 🛠️ Technical Architecture
 
@@ -106,6 +114,7 @@ Simply open `index.html` in your web browser (some features may not work due to 
 - **Camera System**: Smooth following and zoom controls
 - **Character Loader**: Dynamic character model management system
 - **Item Loader**: Equipment and asset management system
+- **Printer Station**: In-world 3D image generation interface
 
 ### Customization
 - **World Size**: Modify ground plane dimensions in `createWorld()`
@@ -159,6 +168,7 @@ Works in all modern browsers that support:
 - ✅ **Character Loader System**: Load custom characters from AI-generated models
 - ✅ **Smart Character Detection**: Auto-recognizes characters by body parts (head, torso, arms, legs, etc.)
 - ✅ **Dynamic Animation System**: Automatic walking animation for any character type
+- ✅ **In-World Printer Station**: 3D image generation interface with visible prompts and output display
 - ✅ **Procedural Ground Textures**: High-resolution grass patterns (1024x1024)
 - ✅ **Tree Textures**: Bark and leaf textures with organic noise
 - ✅ **Dynamic Lighting**: Ambient + directional lights with soft shadows
@@ -177,6 +187,7 @@ Works in all modern browsers that support:
 - ✅ **Cross-browser Compatibility**: Works on all modern browsers
 - ✅ **Character Loader System**: Dynamic character model swapping
 - ✅ **Universal Animation Engine**: Auto-detects and animates any character type
+- ✅ **In-World UI System**: Removed hotkeys, replaced with clickable 3D objects for all tools
 
 ### 🎯 **Next Development Phase: Woodcutting System**
 
@@ -247,9 +258,15 @@ Works in all modern browsers that support:
 1. ✅ Create character loader UI with filtering and selection
 2. ✅ Add character saving to library with auto-detection
 3. ✅ Implement character swapping to replace player model
-4. ✅ Add workbench button and keyboard shortcuts (C, I, W)
+4. ✅ Replace hotkeys with in-world interactive objects (Printer, Workbench, Item Loader, Character Loader)
 5. ✅ Update camera following for custom characters
 6. ✅ **Fixed Character Positioning**: Characters now have feet on ground, not waist at 0,0
+
+#### **Priority 1.5: In-World Printer Station (Completed!)**
+1. ✅ Create 3D printer model with interactive elements
+2. ✅ Implement 3D text interface for prompts and user input
+3. ✅ Add image generation and display in the 3D scene
+4. ✅ Integrate with existing AI image generation backend
 
 #### **Priority 2: Woodcutting Axe (This Session)**
 1. Create 3D axe geometry (handle + head)
