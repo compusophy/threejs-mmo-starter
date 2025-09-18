@@ -1,0 +1,21 @@
+{
+  "name": "new-inspo",
+  "version": "1.0.0",
+  "description": "A modern 3D isometric exploration game built with Three.js, featuring smooth click-to-move controls, dynamic camera system, and immersive 3D world navigation.",
+  "main": "game3d.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "mime": "^4.1.0"
+  }
+}

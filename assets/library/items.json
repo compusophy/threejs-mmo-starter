@@ -1,0 +1,1277 @@
+{
+  "items": [
+    {
+      "id": "item_1758007338461",
+      "name": "pointy sword",
+      "category": "weapon",
+      "code": "function createGeneratedItem(THREE) {\n\tconst group = new THREE.Group();\n\tconst scale = 0.2;\n\n\tconst metalMaterial = new THREE.MeshLambertMaterial({ color: 0x4d4f53 });\n\tconst leatherMaterial = new THREE.MeshLambertMaterial({ color: 0x6a4a3a });\n\n\t// blade\n\tconst bladeGeometry = new THREE.CylinderGeometry(0.1 * scale, 0.6 * scale, 7 * scale, 4, 1);\n\tconst blade = new THREE.Mesh(bladeGeometry, metalMaterial);\n\tblade.position.set(0, 3.8 * scale, 0);\n\tblade.rotation.set(0, Math.PI / 4, 0);\n\tgroup.add(blade);\n\n\t// crossguard_center\n\tconst crossguardCenterGeometry = new THREE.CylinderGeometry(0.45 * scale, 0.45 * scale, 0.7 * scale, 4, 1);\n\tconst crossguardCenter = new THREE.Mesh(crossguardCenterGeometry, metalMaterial);\n\tcrossguardCenter.position.set(0, 0.1 * scale, 0);\n\tcrossguardCenter.rotation.set(0, Math.PI / 4, 0);\n\tgroup.add(crossguardCenter);\n\n\t// crossguard_sides\n\tconst crossguardSideGeometry = new THREE.BoxGeometry(1.5 * scale, 0.6 * scale, 0.6 * scale);\n\tconst crossguardRight = new THREE.Mesh(crossguardSideGeometry, metalMaterial);\n\tcrossguardRight.position.set(1.1 * scale, 0.1 * scale, 0);\n\tcrossguardRight.rotation.set(0, 0, (10 * Math.PI) / 180);\n\tgroup.add(crossguardRight);\n\n\tconst crossguardLeft = new THREE.Mesh(crossguardSideGeometry, metalMaterial);\n\tcrossguardLeft.position.set(-1.1 * scale, 0.1 * scale, 0);\n\tcrossguardLeft.rotation.set(0, 0, (-10 * Math.PI) / 180);\n\tgroup.add(crossguardLeft);\n\n\t// hilt\n\tconst hiltGeometry = new THREE.CylinderGeometry(0.3 * scale, 0.3 * scale, 2.2 * scale, 8, 1);\n\tconst hilt = new THREE.Mesh(hiltGeometry, leatherMaterial);\n\thilt.position.set(0, -1.2 * scale, 0);\n\tgroup.add(hilt);\n\n\t// pommel\n\tconst pommelGeometry = new THREE.CylinderGeometry(0.4 * scale, 0.4 * scale, 0.5 * scale, 8, 1);\n\tconst pommel = new THREE.Mesh(pommelGeometry, metalMaterial);\n\tpommel.position.set(0, -2.5 * scale, 0);\n\tpommel.rotation.set(0, (22.5 * Math.PI) / 180, 0);\n\tgroup.add(pommel);\n\n\treturn group;\n}",
+      "analysis": {
+        "name": "Low Poly Arming Sword",
+        "components": [
+          {
+            "name": "blade",
+            "shape": "prism",
+            "dimensions": {
+              "x": 1.2,
+              "y": 7,
+              "z": 0.25,
+              "detail": 4
+            },
+            "position": {
+              "x": 0,
+              "y": 3.8,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 45,
+              "z": 0
+            },
+            "color": "#4d4f53"
+          },
+          {
+            "name": "crossguard_center",
+            "shape": "prism",
+            "dimensions": {
+              "x": 0.9,
+              "y": 0.7,
+              "z": 0.9,
+              "detail": 4
+            },
+            "position": {
+              "x": 0,
+              "y": 0.1,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 45,
+              "z": 0
+            },
+            "color": "#4d4f53"
+          },
+          {
+            "name": "crossguard_right",
+            "shape": "prism",
+            "dimensions": {
+              "x": 1.5,
+              "y": 0.6,
+              "z": 0.6
+            },
+            "position": {
+              "x": 1.1,
+              "y": 0.1,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 10
+            },
+            "color": "#4d4f53"
+          },
+          {
+            "name": "crossguard_left",
+            "shape": "prism",
+            "dimensions": {
+              "x": 1.5,
+              "y": 0.6,
+              "z": 0.6
+            },
+            "position": {
+              "x": -1.1,
+              "y": 0.1,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -10
+            },
+            "color": "#4d4f53"
+          },
+          {
+            "name": "hilt",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 0.3,
+              "height": 2.2,
+              "detail": 8
+            },
+            "position": {
+              "x": 0,
+              "y": -1.2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#6a4a3a"
+          },
+          {
+            "name": "pommel",
+            "shape": "prism",
+            "dimensions": {
+              "x": 0.8,
+              "y": 0.5,
+              "z": 0.8,
+              "detail": 8
+            },
+            "position": {
+              "x": 0,
+              "y": -2.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 22.5,
+              "z": 0
+            },
+            "color": "#4d4f53"
+          }
+        ],
+        "materials": [
+          "Matte Metal",
+          "Matte Leather"
+        ],
+        "dominantColors": [
+          "#4d4f53",
+          "#6a4a3a"
+        ],
+        "styleNotes": "A low-polygon model of a classic medieval arming sword. The design features a faceted, geometric construction with clean, hard edges and untextured, flat-shaded surfaces. The blade has a distinct central ridge creating a diamond cross-section. The hilt's geometry is twisted to suggest a leather wrap without using textures. The overall aesthetic is stylized and suitable for minimalist or cartoon-style games."
+      },
+      "meta": {},
+      "createdAt": "2025-09-16T07:22:18.461Z",
+      "updatedAt": "2025-09-16T07:22:18.461Z"
+    },
+    {
+      "id": "item_1758064877598",
+      "name": "flat broadsword",
+      "category": "weapon",
+      "code": "function createGeneratedItem(THREE) {\n\tconst group = new THREE.Group();\n\tconst scale = 0.2;\n\n\tconst metalMaterial = new THREE.MeshLambertMaterial({ color: 0x696969 });\n\tconst hiltMaterial = new THREE.MeshLambertMaterial({ color: 0x8C644C });\n\n\t// blade\n\tconst bladeGeometry = new THREE.BoxGeometry(1.5 * scale, 8 * scale, 0.2 * scale);\n\tconst blade = new THREE.Mesh(bladeGeometry, metalMaterial);\n\tblade.position.set(0, 4.25 * scale, 0);\n\tgroup.add(blade);\n\n\t// guard\n\tconst guardGeometry = new THREE.BoxGeometry(4 * scale, 0.5 * scale, 0.6 * scale);\n\tconst guard = new THREE.Mesh(guardGeometry, metalMaterial);\n\tguard.position.set(0, 0, 0);\n\tgroup.add(guard);\n\n\t// hilt\n\tconst hiltGeometry = new THREE.CylinderGeometry(0.3 * scale, 0.3 * scale, 2.5 * scale, 8);\n\tconst hilt = new THREE.Mesh(hiltGeometry, hiltMaterial);\n\thilt.position.set(0, -1.5 * scale, 0);\n\tgroup.add(hilt);\n\n\t// pommel\n\tconst pommelGeometry = new THREE.SphereGeometry(0.4 * scale, 6, 4);\n\tconst pommel = new THREE.Mesh(pommelGeometry, metalMaterial);\n\tpommel.position.set(0, -3 * scale, 0);\n\tgroup.add(pommel);\n\n\treturn group;\n}",
+      "analysis": {
+        "name": "Low Poly Sword",
+        "components": [
+          {
+            "name": "blade",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.5,
+              "y": 8,
+              "z": 0.2
+            },
+            "position": {
+              "x": 0,
+              "y": 4.25,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#696969"
+          },
+          {
+            "name": "guard",
+            "shape": "box",
+            "dimensions": {
+              "x": 4,
+              "y": 0.5,
+              "z": 0.6
+            },
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#696969"
+          },
+          {
+            "name": "hilt",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 0.3,
+              "height": 2.5,
+              "detail": 8
+            },
+            "position": {
+              "x": 0,
+              "y": -1.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#8C644C"
+          },
+          {
+            "name": "pommel",
+            "shape": "sphere",
+            "dimensions": {
+              "radius": 0.4,
+              "detail": 1
+            },
+            "position": {
+              "x": 0,
+              "y": -3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#696969"
+          }
+        ],
+        "materials": [
+          "Matte"
+        ],
+        "dominantColors": [
+          "#696969",
+          "#8C644C"
+        ],
+        "styleNotes": "A classic low-poly sword model with a flat-shaded, faceted appearance. The blade, simplified as a box, tapers to a sharp point and features a central ridge creating a diamond cross-section. The guard has beveled edges, giving it a more complex shape than a simple box. The hilt is an octagonal prism (a low-detail cylinder), and the pommel is a faceted polyhedron, represented here as a low-detail sphere (icosahedron)."
+      },
+      "meta": {},
+      "createdAt": "2025-09-16T23:21:17.598Z",
+      "updatedAt": "2025-09-16T23:21:17.598Z"
+    },
+    {
+      "id": "item_1758152733413",
+      "name": "horse",
+      "category": "character",
+      "code": "function createGeneratedItem(THREE) {\n    const group = new THREE.Group();\n    const scale = 0.1;\n    const verticalOffset = -6.5 * scale; // Center the model vertically\n\n    const components = [{\n        \"name\": \"Torso_Hoodie\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 6, \"y\": 4.5, \"z\": 3.5 },\n        \"position\": { \"x\": 0, \"y\": 7, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#4a6e45\"\n    }, {\n        \"name\": \"Hoodie_Pocket\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 3.5, \"y\": 1.8, \"z\": 0.2 },\n        \"position\": { \"x\": 0, \"y\": 6, \"z\": 1.8 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#4a6e45\"\n    }, {\n        \"name\": \"Hood\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 4.5, \"y\": 4.5, \"z\": 4.5 },\n        \"position\": { \"x\": 0, \"y\": 10, \"z\": -0.5 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#4a6e45\"\n    }, {\n        \"name\": \"Drawstring_L\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 0.2, \"y\": 1.8, \"z\": 0.2 },\n        \"position\": { \"x\": -0.6, \"y\": 8.5, \"z\": 1.7 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#d1c7a8\"\n    }, {\n        \"name\": \"Drawstring_R\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 0.2, \"y\": 1.8, \"z\": 0.2 },\n        \"position\": { \"x\": 0.6, \"y\": 8.5, \"z\": 1.7 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#d1c7a8\"\n    }, {\n        \"name\": \"Head\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 2.8, \"y\": 3.2, \"z\": 3.5 },\n        \"position\": { \"x\": 0, \"y\": 10, \"z\": 1 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#8c5a44\"\n    }, {\n        \"name\": \"Snout\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 2, \"y\": 1.8, \"z\": 2 },\n        \"position\": { \"x\": 0, \"y\": 9.5, \"z\": 3 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#e8a7a7\"\n    }, {\n        \"name\": \"Ear_L\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1, \"y\": 2.2, \"z\": 0.5 },\n        \"position\": { \"x\": -1.3, \"y\": 12.2, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 15 },\n        \"color\": \"#8c5a44\"\n    }, {\n        \"name\": \"Ear_R\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1, \"y\": 2.2, \"z\": 0.5 },\n        \"position\": { \"x\": 1.3, \"y\": 12.2, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": -15 },\n        \"color\": \"#8c5a44\"\n    }, {\n        \"name\": \"Mane_Tuft\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 0.6, \"y\": 1, \"z\": 0.6 },\n        \"position\": { \"x\": 0, \"y\": 12.5, \"z\": -0.2 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#4a3b35\"\n    }, {\n        \"name\": \"Leg_L\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1.5, \"y\": 4, \"z\": 1.5 },\n        \"position\": { \"x\": -1.5, \"y\": 3, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#8c5a44\"\n    }, {\n        \"name\": \"Hoof_L\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1.8, \"y\": 1, \"z\": 1.8 },\n        \"position\": { \"x\": -1.5, \"y\": 0.5, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#4a3b35\"\n    }, {\n        \"name\": \"Leg_R\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1.5, \"y\": 4, \"z\": 1.5 },\n        \"position\": { \"x\": 1.5, \"y\": 3, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#8c5a44\"\n    }, {\n        \"name\": \"Hoof_R\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1.8, \"y\": 1, \"z\": 1.8 },\n        \"position\": { \"x\": 1.5, \"y\": 0.5, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#4a3b35\"\n    }, {\n        \"name\": \"Arm_L\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 3, \"y\": 1.5, \"z\": 1.5 },\n        \"position\": { \"x\": -3.5, \"y\": 8.5, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 25 },\n        \"color\": \"#4a6e45\"\n    }, {\n        \"name\": \"Cuff_L\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1.2, \"y\": 1.6, \"z\": 1.5 },\n        \"position\": { \"x\": -4.9, \"y\": 7.2, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 25 },\n        \"color\": \"#e0e0e0\"\n    }, {\n        \"name\": \"Arm_R\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 3, \"y\": 1.5, \"z\": 1.5 },\n        \"position\": { \"x\": 3.5, \"y\": 8.5, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": -25 },\n        \"color\": \"#4a6e45\"\n    }, {\n        \"name\": \"Hand_R\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1.2, \"y\": 1.6, \"z\": 1.5 },\n        \"position\": { \"x\": 4.9, \"y\": 7.2, \"z\": 0 },\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": -25 },\n        \"color\": \"#c8a087\"\n    }];\n\n    // FIXED SWORD COMPONENTS - Now positioned relative to right hand at (4.9, 7.2, 0)\n    const swordComponents = [{\n        \"name\": \"Sword_Blade\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 0.25, \"y\": 1.8, \"z\": 8 }, // Thin blade extending forward (+Z)\n        \"position\": { \"x\": 4.9, \"y\": 7.2, \"z\": 4 }, // Centered on hand, extending forward\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#60f9f3\"\n    }, {\n        \"name\": \"Sword_Guard\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 0.6, \"y\": 3, \"z\": 0.6 },\n        \"position\": { \"x\": 4.9, \"y\": 7.2, \"z\": 0.5 }, // Just forward of hand\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 0 },\n        \"color\": \"#f0c420\"\n    }, {\n        \"name\": \"Sword_Hilt\",\n        \"shape\": \"cylinder\",\n        \"dimensions\": { \"radius\": 0.4, \"height\": 2 },\n        \"position\": { \"x\": 4.9, \"y\": 7.2, \"z\": 0 }, // At hand position (grip point)\n        \"rotation\": { \"x\": 0, \"y\": 0, \"z\": 90 },\n        \"color\": \"#6b4a3a\"\n    }, {\n        \"name\": \"Sword_Pommel\",\n        \"shape\": \"box\",\n        \"dimensions\": { \"x\": 1, \"y\": 1, \"z\": 1 },\n        \"position\": { \"x\": 4.9, \"y\": 7.2, \"z\": -1 }, // Behind hand (counterweight)\n        \"rotation\": { \"x\": 0, \"y\": 45, \"z\": 0 },\n        \"color\": \"#f0c420\"\n    }];\n\n    const allComponents = components.concat(swordComponents);\n\n    allComponents.forEach(c => {\n        let geometry;\n        const dims = c.dimensions;\n\n        switch (c.shape) {\n            case 'cylinder':\n                geometry = new THREE.CylinderGeometry(dims.radius * scale, dims.radius * scale, dims.height * scale, 12);\n                break;\n            case 'box':\n            default: // Handles \"prism\" as a box\n                geometry = new THREE.BoxGeometry(dims.x * scale, dims.y * scale, dims.z * scale);\n                break;\n        }\n\n        const color = new THREE.Color(c.color).getHex();\n        const material = new THREE.MeshLambertMaterial({ color: color });\n\n        if (c.name === 'Sword_Blade') {\n            material.emissive = new THREE.Color(color);\n            material.emissiveIntensity = 0.9;\n        }\n\n        const mesh = new THREE.Mesh(geometry, material);\n\n        mesh.position.set(\n            c.position.x * scale,\n            c.position.y * scale + verticalOffset,\n            c.position.z * scale\n        );\n\n        mesh.rotation.set(\n            THREE.MathUtils.degToRad(c.rotation.x),\n            THREE.MathUtils.degToRad(c.rotation.y),\n            THREE.MathUtils.degToRad(c.rotation.z)\n        );\n\n        group.add(mesh);\n    });\n    \n    return group;\n}",
+      "analysis": null,
+      "meta": {},
+      "createdAt": "2025-09-17T23:45:33.413Z",
+      "updatedAt": "2025-09-17T23:45:33.413Z"
+    },
+    {
+      "id": "item_1758154591951",
+      "name": "mario",
+      "category": "weapon",
+      "code": "function createGeneratedItem(THREE) {\n\tconst group = new THREE.Group();\n\tconst scale = 0.018;\n\tconst data = {\n\t\t\"name\": \"Low-Poly Articulated Mario\",\n\t\t\"components\": [{\n\t\t\t\"name\": \"torso\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 20,\n\t\t\t\t\"height\": 30\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 50,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"head\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 35,\n\t\t\t\t\"y\": 30,\n\t\t\t\t\"z\": 30\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 80,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"hat_dome\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 22,\n\t\t\t\t\"height\": 15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 93,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"hat_brim\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 50,\n\t\t\t\t\"y\": 4,\n\t\t\t\t\"z\": 20\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 88,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"hat_logo_base\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 1\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 95,\n\t\t\t\t\"z\": 22.5\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -15,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FFFFFF\"\n\t\t}, {\n\t\t\t\"name\": \"hat_logo_m\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 8,\n\t\t\t\t\"y\": 8,\n\t\t\t\t\"z\": 1\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 95,\n\t\t\t\t\"z\": 23\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -15,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"nose\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 78,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"mustache\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 28,\n\t\t\t\t\"y\": 8,\n\t\t\t\t\"z\": 5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 74,\n\t\t\t\t\"z\": 14\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#402008\"\n\t\t}, {\n\t\t\t\"name\": \"left_ear\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 5,\n\t\t\t\t\"height\": 2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -17,\n\t\t\t\t\"y\": 80,\n\t\t\t\t\"z\": -2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": -90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"right_ear\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 5,\n\t\t\t\t\"height\": 2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 17,\n\t\t\t\t\"y\": 80,\n\t\t\t\t\"z\": -2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"left_upper_leg\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 12,\n\t\t\t\t\"y\": 15,\n\t\t\t\t\"z\": 12\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": 35,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"right_upper_leg\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 12,\n\t\t\t\t\"y\": 15,\n\t\t\t\t\"z\": 12\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 35,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"left_shoe\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": 17,\n\t\t\t\t\"z\": 2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 90,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#603010\"\n\t\t}, {\n\t\t\t\"name\": \"right_shoe\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 17,\n\t\t\t\t\"z\": 2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 90,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#603010\"\n\t\t}, {\n\t\t\t\"name\": \"left_upper_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -25,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 30\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"right_upper_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 25,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -30\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"left_lower_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -38,\n\t\t\t\t\"y\": 50,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"right_lower_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 38,\n\t\t\t\t\"y\": 50,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -15\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"left_hand\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 12,\n\t\t\t\t\"z\": 10\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -49,\n\t\t\t\t\"y\": 42,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"color\": \"#FFFFFF\"\n\t\t}, {\n\t\t\t\"name\": \"right_hand\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 12,\n\t\t\t\t\"z\": 10\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 49,\n\t\t\t\t\"y\": 42,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -15\n\t\t\t},\n\t\t\t\"color\": \"#FFFFFF\"\n\t\t}, {\n\t\t\t\"name\": \"left_button\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 4,\n\t\t\t\t\"height\": 1.5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -8,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 19\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": -15,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8D820\"\n\t\t}, {\n\t\t\t\"name\": \"right_button\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 4,\n\t\t\t\t\"height\": 1.5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 8,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 19\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": 15,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8D820\"\n\t\t}, {\n\t\t\t\"name\": \"left_shoulder_joint\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 2,\n\t\t\t\t\"height\": 8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -20,\n\t\t\t\t\"y\": 62,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#303030\"\n\t\t}, {\n\t\t\t\"name\": \"right_shoulder_joint\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 2,\n\t\t\t\t\"height\": 8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 20,\n\t\t\t\t\"y\": 62,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#303030\"\n\t\t}]\n\t};\n\n\tconst degToRad = (deg) => deg * Math.PI / 180;\n\n\tconst createCapsule = (radius, height, material) => {\n\t\tconst capsuleGroup = new THREE.Group();\n\t\tconst cylinder = new THREE.Mesh(\n\t\t\tnew THREE.CylinderGeometry(radius, radius, height, 8, 1),\n\t\t\tmaterial\n\t\t);\n\t\tconst topSphere = new THREE.Mesh(\n\t\t\tnew THREE.SphereGeometry(radius, 8, 6),\n\t\t\tmaterial\n\t\t);\n\t\ttopSphere.position.y = height / 2;\n\t\tconst bottomSphere = new THREE.Mesh(\n\t\t\tnew THREE.SphereGeometry(radius, 8, 6),\n\t\t\tmaterial\n\t\t);\n\t\tbottomSphere.position.y = -height / 2;\n\t\tcapsuleGroup.add(cylinder, topSphere, bottomSphere);\n\t\treturn capsuleGroup;\n\t};\n\n\tdata.components.forEach(component => {\n\t\tconst material = new THREE.MeshLambertMaterial({\n\t\t\tcolor: component.color\n\t\t});\n\t\tlet mesh;\n\n\t\tswitch (component.shape) {\n\t\t\tcase 'capsule':\n\t\t\t\tmesh = createCapsule(\n\t\t\t\t\tcomponent.dimensions.radius * scale,\n\t\t\t\t\tcomponent.dimensions.height * scale,\n\t\t\t\t\tmaterial\n\t\t\t\t);\n\t\t\t\tbreak;\n\t\t\tcase 'prism':\n\t\t\tcase 'box':\n\t\t\t\tmesh = new THREE.Mesh(\n\t\t\t\t\tnew THREE.BoxGeometry(\n\t\t\t\t\t\tcomponent.dimensions.x * scale,\n\t\t\t\t\t\tcomponent.dimensions.y * scale,\n\t\t\t\t\t\tcomponent.dimensions.z * scale\n\t\t\t\t\t),\n\t\t\t\t\tmaterial\n\t\t\t\t);\n\t\t\t\tbreak;\n\t\t\tcase 'cylinder':\n\t\t\t\tconst radialSegments = component.name.includes('logo_base') ? 12 : 8;\n\t\t\t\tmesh = new THREE.Mesh(\n\t\t\t\t\tnew THREE.CylinderGeometry(\n\t\t\t\t\t\tcomponent.dimensions.radius * scale,\n\t\t\t\t\t\tcomponent.dimensions.radius * scale,\n\t\t\t\t\t\tcomponent.dimensions.height * scale,\n\t\t\t\t\t\tradialSegments\n\t\t\t\t\t),\n\t\t\t\t\tmaterial\n\t\t\t\t);\n\t\t\t\tbreak;\n\t\t}\n\n\t\tif (mesh) {\n\t\t\tmesh.position.set(\n\t\t\t\tcomponent.position.x * scale,\n\t\t\t\tcomponent.position.y * scale,\n\t\t\t\tcomponent.position.z * scale\n\t\t\t);\n\n\t\t\tif (component.name === 'left_ear') {\n\t\t\t\tmesh.rotation.z = degToRad(90);\n\t\t\t} else if (component.name === 'right_ear') {\n\t\t\t\tmesh.rotation.z = degToRad(-90);\n\t\t\t} else if (component.name.includes('_joint')) {\n\t\t\t\tmesh.rotation.x = degToRad(90);\n\t\t\t} else {\n\t\t\t\tmesh.rotation.set(\n\t\t\t\t\tdegToRad(component.rotation.x),\n\t\t\t\t\tdegToRad(component.rotation.y),\n\t\t\t\t\tdegToRad(component.rotation.z)\n\t\t\t\t);\n\t\t\t}\n\n\t\t\tgroup.add(mesh);\n\t\t}\n\t});\n\treturn group;\n}",
+      "analysis": {
+        "name": "Low-Poly Articulated Mario",
+        "components": [
+          {
+            "name": "torso",
+            "shape": "capsule",
+            "dimensions": {
+              "radius": 20,
+              "height": 30
+            },
+            "position": {
+              "x": 0,
+              "y": 50,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#D73A2A"
+          },
+          {
+            "name": "head",
+            "shape": "prism",
+            "dimensions": {
+              "x": 35,
+              "y": 30,
+              "z": 30
+            },
+            "position": {
+              "x": 0,
+              "y": 80,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#F8B880"
+          },
+          {
+            "name": "hat_dome",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 22,
+              "height": 15
+            },
+            "position": {
+              "x": 0,
+              "y": 93,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#D73A2A"
+          },
+          {
+            "name": "hat_brim",
+            "shape": "box",
+            "dimensions": {
+              "x": 50,
+              "y": 4,
+              "z": 20
+            },
+            "position": {
+              "x": 0,
+              "y": 88,
+              "z": 15
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#D73A2A"
+          },
+          {
+            "name": "hat_logo_base",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 7,
+              "height": 1
+            },
+            "position": {
+              "x": 0,
+              "y": 95,
+              "z": 22.5
+            },
+            "rotation": {
+              "x": -15,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#FFFFFF"
+          },
+          {
+            "name": "hat_logo_m",
+            "shape": "prism",
+            "dimensions": {
+              "x": 8,
+              "y": 8,
+              "z": 1
+            },
+            "position": {
+              "x": 0,
+              "y": 95,
+              "z": 23
+            },
+            "rotation": {
+              "x": -15,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#D73A2A"
+          },
+          {
+            "name": "nose",
+            "shape": "capsule",
+            "dimensions": {
+              "radius": 7,
+              "height": 5
+            },
+            "position": {
+              "x": 0,
+              "y": 78,
+              "z": 15
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#F8B880"
+          },
+          {
+            "name": "mustache",
+            "shape": "prism",
+            "dimensions": {
+              "x": 28,
+              "y": 8,
+              "z": 5
+            },
+            "position": {
+              "x": 0,
+              "y": 74,
+              "z": 14
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#402008"
+          },
+          {
+            "name": "left_ear",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 5,
+              "height": 2
+            },
+            "position": {
+              "x": -17,
+              "y": 80,
+              "z": -2
+            },
+            "rotation": {
+              "x": 0,
+              "y": -90,
+              "z": 0
+            },
+            "color": "#F8B880"
+          },
+          {
+            "name": "right_ear",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 5,
+              "height": 2
+            },
+            "position": {
+              "x": 17,
+              "y": 80,
+              "z": -2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 90,
+              "z": 0
+            },
+            "color": "#F8B880"
+          },
+          {
+            "name": "left_upper_leg",
+            "shape": "box",
+            "dimensions": {
+              "x": 12,
+              "y": 15,
+              "z": 12
+            },
+            "position": {
+              "x": -10,
+              "y": 35,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#D73A2A"
+          },
+          {
+            "name": "right_upper_leg",
+            "shape": "box",
+            "dimensions": {
+              "x": 12,
+              "y": 15,
+              "z": 12
+            },
+            "position": {
+              "x": 10,
+              "y": 35,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#D73A2A"
+          },
+          {
+            "name": "left_shoe",
+            "shape": "capsule",
+            "dimensions": {
+              "radius": 7,
+              "height": 15
+            },
+            "position": {
+              "x": -10,
+              "y": 17,
+              "z": 2
+            },
+            "rotation": {
+              "x": 90,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#603010"
+          },
+          {
+            "name": "right_shoe",
+            "shape": "capsule",
+            "dimensions": {
+              "radius": 7,
+              "height": 15
+            },
+            "position": {
+              "x": 10,
+              "y": 17,
+              "z": 2
+            },
+            "rotation": {
+              "x": 90,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#603010"
+          },
+          {
+            "name": "left_upper_arm",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 6,
+              "height": 18
+            },
+            "position": {
+              "x": -25,
+              "y": 60,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 30
+            },
+            "color": "#1050D0"
+          },
+          {
+            "name": "right_upper_arm",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 6,
+              "height": 18
+            },
+            "position": {
+              "x": 25,
+              "y": 60,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -30
+            },
+            "color": "#1050D0"
+          },
+          {
+            "name": "left_lower_arm",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 6,
+              "height": 18
+            },
+            "position": {
+              "x": -38,
+              "y": 50,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 15
+            },
+            "color": "#1050D0"
+          },
+          {
+            "name": "right_lower_arm",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 6,
+              "height": 18
+            },
+            "position": {
+              "x": 38,
+              "y": 50,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -15
+            },
+            "color": "#1050D0"
+          },
+          {
+            "name": "left_hand",
+            "shape": "prism",
+            "dimensions": {
+              "x": 10,
+              "y": 12,
+              "z": 10
+            },
+            "position": {
+              "x": -49,
+              "y": 42,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 15
+            },
+            "color": "#FFFFFF"
+          },
+          {
+            "name": "right_hand",
+            "shape": "prism",
+            "dimensions": {
+              "x": 10,
+              "y": 12,
+              "z": 10
+            },
+            "position": {
+              "x": 49,
+              "y": 42,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -15
+            },
+            "color": "#FFFFFF"
+          },
+          {
+            "name": "left_button",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 4,
+              "height": 1.5
+            },
+            "position": {
+              "x": -8,
+              "y": 60,
+              "z": 19
+            },
+            "rotation": {
+              "x": -10,
+              "y": -15,
+              "z": 0
+            },
+            "color": "#F8D820"
+          },
+          {
+            "name": "right_button",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 4,
+              "height": 1.5
+            },
+            "position": {
+              "x": 8,
+              "y": 60,
+              "z": 19
+            },
+            "rotation": {
+              "x": -10,
+              "y": 15,
+              "z": 0
+            },
+            "color": "#F8D820"
+          },
+          {
+            "name": "left_shoulder_joint",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 2,
+              "height": 8
+            },
+            "position": {
+              "x": -20,
+              "y": 62,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 90,
+              "z": 0
+            },
+            "color": "#303030"
+          },
+          {
+            "name": "right_shoulder_joint",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 2,
+              "height": 8
+            },
+            "position": {
+              "x": 20,
+              "y": 62,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 90,
+              "z": 0
+            },
+            "color": "#303030"
+          }
+        ],
+        "materials": [
+          "matte",
+          "plastic",
+          "papercraft"
+        ],
+        "dominantColors": [
+          "#D73A2A",
+          "#1050D0",
+          "#F8B880",
+          "#FFFFFF",
+          "#603010"
+        ],
+        "styleNotes": "The model represents Mario in a distinct low-poly, faceted style, reminiscent of papercraft (pepakura) or an articulated wooden toy. The geometry is composed of simple, un-smoothed primitives, giving it a blocky and stylized appearance. A key feature is the visible, functional-looking joints at the shoulders, elbows, and knees, which are modeled as dark pins or rivets, enhancing the toy-like aesthetic. The color palette is vibrant and flat, with no complex textures or gradients, adhering to the character's iconic design."
+      },
+      "meta": {},
+      "createdAt": "2025-09-18T00:16:31.951Z",
+      "updatedAt": "2025-09-18T00:16:31.951Z"
+    },
+    {
+      "id": "item_1758154879923",
+      "name": "maro",
+      "category": "character",
+      "code": "function createGeneratedItem(THREE) {\n\tconst group = new THREE.Group();\n\tconst scale = 0.018;\n\tconst data = {\n\t\t\"name\": \"Low-Poly Articulated Mario\",\n\t\t\"components\": [{\n\t\t\t\"name\": \"torso\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 20,\n\t\t\t\t\"height\": 30\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 50,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"head\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 35,\n\t\t\t\t\"y\": 30,\n\t\t\t\t\"z\": 30\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 80,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"hat_dome\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 22,\n\t\t\t\t\"height\": 15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 93,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"hat_brim\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 50,\n\t\t\t\t\"y\": 4,\n\t\t\t\t\"z\": 20\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 88,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"hat_logo_base\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 1\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 95,\n\t\t\t\t\"z\": 22.5\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -15,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FFFFFF\"\n\t\t}, {\n\t\t\t\"name\": \"hat_logo_m\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 8,\n\t\t\t\t\"y\": 8,\n\t\t\t\t\"z\": 1\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 95,\n\t\t\t\t\"z\": 23\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -15,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"nose\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 78,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"mustache\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 28,\n\t\t\t\t\"y\": 8,\n\t\t\t\t\"z\": 5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 74,\n\t\t\t\t\"z\": 14\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#402008\"\n\t\t}, {\n\t\t\t\"name\": \"left_ear\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 5,\n\t\t\t\t\"height\": 2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -17,\n\t\t\t\t\"y\": 80,\n\t\t\t\t\"z\": -2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": -90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"right_ear\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 5,\n\t\t\t\t\"height\": 2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 17,\n\t\t\t\t\"y\": 80,\n\t\t\t\t\"z\": -2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8B880\"\n\t\t}, {\n\t\t\t\"name\": \"left_upper_leg\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 12,\n\t\t\t\t\"y\": 15,\n\t\t\t\t\"z\": 12\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": 35,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"right_upper_leg\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 12,\n\t\t\t\t\"y\": 15,\n\t\t\t\t\"z\": 12\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 35,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D73A2A\"\n\t\t}, {\n\t\t\t\"name\": \"left_shoe\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": 17,\n\t\t\t\t\"z\": 2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 90,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#603010\"\n\t\t}, {\n\t\t\t\"name\": \"right_shoe\",\n\t\t\t\"shape\": \"capsule\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 7,\n\t\t\t\t\"height\": 15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 17,\n\t\t\t\t\"z\": 2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 90,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#603010\"\n\t\t}, {\n\t\t\t\"name\": \"left_upper_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -25,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 30\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"right_upper_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 25,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -30\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"left_lower_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -38,\n\t\t\t\t\"y\": 50,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"right_lower_arm\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 6,\n\t\t\t\t\"height\": 18\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 38,\n\t\t\t\t\"y\": 50,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -15\n\t\t\t},\n\t\t\t\"color\": \"#1050D0\"\n\t\t}, {\n\t\t\t\"name\": \"left_hand\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 12,\n\t\t\t\t\"z\": 10\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -49,\n\t\t\t\t\"y\": 42,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"color\": \"#FFFFFF\"\n\t\t}, {\n\t\t\t\"name\": \"right_hand\",\n\t\t\t\"shape\": \"prism\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 10,\n\t\t\t\t\"y\": 12,\n\t\t\t\t\"z\": 10\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 49,\n\t\t\t\t\"y\": 42,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -15\n\t\t\t},\n\t\t\t\"color\": \"#FFFFFF\"\n\t\t}, {\n\t\t\t\"name\": \"left_button\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 4,\n\t\t\t\t\"height\": 1.5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -8,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 19\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": -15,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8D820\"\n\t\t}, {\n\t\t\t\"name\": \"right_button\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 4,\n\t\t\t\t\"height\": 1.5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 8,\n\t\t\t\t\"y\": 60,\n\t\t\t\t\"z\": 19\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": 15,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#F8D820\"\n\t\t}, {\n\t\t\t\"name\": \"left_shoulder_joint\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 2,\n\t\t\t\t\"height\": 8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -20,\n\t\t\t\t\"y\": 62,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#303030\"\n\t\t}, {\n\t\t\t\"name\": \"right_shoulder_joint\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 2,\n\t\t\t\t\"height\": 8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 20,\n\t\t\t\t\"y\": 62,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 90,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#303030\"\n\t\t}]\n\t};\n\n\tconst degToRad = (deg) => deg * Math.PI / 180;\n\n\tconst createCapsule = (radius, height, material) => {\n\t\tconst capsuleGroup = new THREE.Group();\n\t\tconst cylinder = new THREE.Mesh(\n\t\t\tnew THREE.CylinderGeometry(radius, radius, height, 8, 1),\n\t\t\tmaterial\n\t\t);\n\t\tconst topSphere = new THREE.Mesh(\n\t\t\tnew THREE.SphereGeometry(radius, 8, 6),\n\t\t\tmaterial\n\t\t);\n\t\ttopSphere.position.y = height / 2;\n\t\tconst bottomSphere = new THREE.Mesh(\n\t\t\tnew THREE.SphereGeometry(radius, 8, 6),\n\t\t\tmaterial\n\t\t);\n\t\tbottomSphere.position.y = -height / 2;\n\t\tcapsuleGroup.add(cylinder, topSphere, bottomSphere);\n\t\treturn capsuleGroup;\n\t};\n\n\tdata.components.forEach(component => {\n\t\tconst material = new THREE.MeshLambertMaterial({\n\t\t\tcolor: component.color\n\t\t});\n\t\tlet mesh;\n\n\t\tswitch (component.shape) {\n\t\t\tcase 'capsule':\n\t\t\t\tmesh = createCapsule(\n\t\t\t\t\tcomponent.dimensions.radius * scale,\n\t\t\t\t\tcomponent.dimensions.height * scale,\n\t\t\t\t\tmaterial\n\t\t\t\t);\n\t\t\t\tbreak;\n\t\t\tcase 'prism':\n\t\t\tcase 'box':\n\t\t\t\tmesh = new THREE.Mesh(\n\t\t\t\t\tnew THREE.BoxGeometry(\n\t\t\t\t\t\tcomponent.dimensions.x * scale,\n\t\t\t\t\t\tcomponent.dimensions.y * scale,\n\t\t\t\t\t\tcomponent.dimensions.z * scale\n\t\t\t\t\t),\n\t\t\t\t\tmaterial\n\t\t\t\t);\n\t\t\t\tbreak;\n\t\t\tcase 'cylinder':\n\t\t\t\tconst radialSegments = component.name.includes('logo_base') ? 12 : 8;\n\t\t\t\tmesh = new THREE.Mesh(\n\t\t\t\t\tnew THREE.CylinderGeometry(\n\t\t\t\t\t\tcomponent.dimensions.radius * scale,\n\t\t\t\t\t\tcomponent.dimensions.radius * scale,\n\t\t\t\t\t\tcomponent.dimensions.height * scale,\n\t\t\t\t\t\tradialSegments\n\t\t\t\t\t),\n\t\t\t\t\tmaterial\n\t\t\t\t);\n\t\t\t\tbreak;\n\t\t}\n\n\t\tif (mesh) {\n\t\t\tmesh.position.set(\n\t\t\t\tcomponent.position.x * scale,\n\t\t\t\tcomponent.position.y * scale,\n\t\t\t\tcomponent.position.z * scale\n\t\t\t);\n\n\t\t\tif (component.name === 'left_ear') {\n\t\t\t\tmesh.rotation.z = degToRad(90);\n\t\t\t} else if (component.name === 'right_ear') {\n\t\t\t\tmesh.rotation.z = degToRad(-90);\n\t\t\t} else if (component.name.includes('_joint')) {\n\t\t\t\tmesh.rotation.x = degToRad(90);\n\t\t\t} else {\n\t\t\t\tmesh.rotation.set(\n\t\t\t\t\tdegToRad(component.rotation.x),\n\t\t\t\t\tdegToRad(component.rotation.y),\n\t\t\t\t\tdegToRad(component.rotation.z)\n\t\t\t\t);\n\t\t\t}\n\n\t\t\tgroup.add(mesh);\n\t\t}\n\t});\n\treturn group;\n}",
+      "analysis": null,
+      "meta": {},
+      "createdAt": "2025-09-18T00:21:19.923Z",
+      "updatedAt": "2025-09-18T00:21:19.923Z"
+    },
+    {
+      "id": "item_1758155411136",
+      "name": "luffy2",
+      "category": "character",
+      "code": "function createGeneratedItem(THREE) {\n\tconst group = new THREE.Group();\n\tconst data = {\n\t\t\"name\": \"Monkey D. Luffy Low Poly\",\n\t\t\"components\": [{\n\t\t\t\"name\": \"hat_crown\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 1.8,\n\t\t\t\t\"height\": 1.0\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 9.1,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FBC40A\"\n\t\t}, {\n\t\t\t\"name\": \"hat_band\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 1.85,\n\t\t\t\t\"height\": 0.4\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 8.7,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D92525\"\n\t\t}, {\n\t\t\t\"name\": \"hat_brim\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 2.8,\n\t\t\t\t\"height\": 0.15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 8.4,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FBC40A\"\n\t\t}, {\n\t\t\t\"name\": \"hair\",\n\t\t\t\"shape\": \"sphere\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 1.6\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 8.2,\n\t\t\t\t\"z\": -0.2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#212121\"\n\t\t}, {\n\t\t\t\"name\": \"head\",\n\t\t\t\"shape\": \"sphere\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 1.5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 8.0,\n\t\t\t\t\"z\": 0.1\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"eye_left\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.15,\n\t\t\t\t\"height\": 0.1\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0.5,\n\t\t\t\t\"y\": 8.2,\n\t\t\t\t\"z\": 1.5\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 90,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#000000\"\n\t\t}, {\n\t\t\t\"name\": \"eye_right\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.15,\n\t\t\t\t\"height\": 0.1\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -0.5,\n\t\t\t\t\"y\": 8.2,\n\t\t\t\t\"z\": 1.5\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 90,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#000000\"\n\t\t}, {\n\t\t\t\"name\": \"mouth\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.2,\n\t\t\t\t\"y\": 0.2,\n\t\t\t\t\"z\": 0.1\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 7.5,\n\t\t\t\t\"z\": 1.5\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": -10,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FFFFFF\"\n\t\t}, {\n\t\t\t\"name\": \"scar_1\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.3,\n\t\t\t\t\"y\": 0.05,\n\t\t\t\t\"z\": 0.05\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0.5,\n\t\t\t\t\"y\": 7.85,\n\t\t\t\t\"z\": 1.5\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 20\n\t\t\t},\n\t\t\t\"color\": \"#BF9A78\"\n\t\t}, {\n\t\t\t\"name\": \"scar_2\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.3,\n\t\t\t\t\"y\": 0.05,\n\t\t\t\t\"z\": 0.05\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0.5,\n\t\t\t\t\"y\": 7.75,\n\t\t\t\t\"z\": 1.5\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 20\n\t\t\t},\n\t\t\t\"color\": \"#BF9A78\"\n\t\t}, {\n\t\t\t\"name\": \"neck\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.6,\n\t\t\t\t\"height\": 0.5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 7.0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"torso\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 3.2,\n\t\t\t\t\"y\": 3.0,\n\t\t\t\t\"z\": 1.5\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 5.4,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"vest_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.5,\n\t\t\t\t\"y\": 2.8,\n\t\t\t\t\"z\": 0.2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0.9,\n\t\t\t\t\"y\": 5.5,\n\t\t\t\t\"z\": 0.75\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": -15,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D92525\"\n\t\t}, {\n\t\t\t\"name\": \"vest_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.5,\n\t\t\t\t\"y\": 2.8,\n\t\t\t\t\"z\": 0.2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -0.9,\n\t\t\t\t\"y\": 5.5,\n\t\t\t\t\"z\": 0.75\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 15,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#D92525\"\n\t\t}, {\n\t\t\t\"name\": \"button_1\",\n\t\t\t\"shape\": \"sphere\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 6.2,\n\t\t\t\t\"z\": 0.75\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FBC40A\"\n\t\t}, {\n\t\t\t\"name\": \"button_2\",\n\t\t\t\"shape\": \"sphere\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 5.5,\n\t\t\t\t\"z\": 0.75\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FBC40A\"\n\t\t}, {\n\t\t\t\"name\": \"button_3\",\n\t\t\t\"shape\": \"sphere\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.15\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 4.8,\n\t\t\t\t\"z\": 0.75\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FBC40A\"\n\t\t}, {\n\t\t\t\"name\": \"sash_waist\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 1.6,\n\t\t\t\t\"height\": 1.0\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 3.8,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#FBC40A\"\n\t\t}, {\n\t\t\t\"name\": \"sash_tail\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 2.5,\n\t\t\t\t\"y\": 0.8,\n\t\t\t\t\"z\": 0.2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 1.8,\n\t\t\t\t\"y\": 3.6,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -30\n\t\t\t},\n\t\t\t\"color\": \"#FBC40A\"\n\t\t}, {\n\t\t\t\"name\": \"upper_arm_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.8,\n\t\t\t\t\"y\": 1.8,\n\t\t\t\t\"z\": 0.8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 2.0,\n\t\t\t\t\"y\": 6.0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -15\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"forearm_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.7,\n\t\t\t\t\"y\": 1.8,\n\t\t\t\t\"z\": 0.7\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 2.4,\n\t\t\t\t\"y\": 4.5,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -10\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"fist_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.9,\n\t\t\t\t\"y\": 0.9,\n\t\t\t\t\"z\": 0.9\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 2.7,\n\t\t\t\t\"y\": 3.3,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": -10\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"upper_arm_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.8,\n\t\t\t\t\"y\": 1.8,\n\t\t\t\t\"z\": 0.8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -2.0,\n\t\t\t\t\"y\": 6.0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 15\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"forearm_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.7,\n\t\t\t\t\"y\": 1.8,\n\t\t\t\t\"z\": 0.7\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -2.4,\n\t\t\t\t\"y\": 4.5,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 10\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"fist_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.9,\n\t\t\t\t\"y\": 0.9,\n\t\t\t\t\"z\": 0.9\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -2.7,\n\t\t\t\t\"y\": 3.3,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 10\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"thigh_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.2,\n\t\t\t\t\"y\": 2.4,\n\t\t\t\t\"z\": 1.2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 1.0,\n\t\t\t\t\"y\": 2.5,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#30589F\"\n\t\t}, {\n\t\t\t\"name\": \"cuff_left\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.8,\n\t\t\t\t\"height\": 0.6\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 1.0,\n\t\t\t\t\"y\": 1.4,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#EFEFEF\"\n\t\t}, {\n\t\t\t\"name\": \"shin_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.8,\n\t\t\t\t\"y\": 2.0,\n\t\t\t\t\"z\": 0.8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 1.0,\n\t\t\t\t\"y\": 0.3,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"sandal_sole_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.0,\n\t\t\t\t\"y\": 0.2,\n\t\t\t\t\"z\": 2.0\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 1.0,\n\t\t\t\t\"y\": -0.8,\n\t\t\t\t\"z\": 0.4\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#A47D55\"\n\t\t}, {\n\t\t\t\"name\": \"sandal_strap_left\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.2,\n\t\t\t\t\"y\": 0.2,\n\t\t\t\t\"z\": 0.2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": 1.0,\n\t\t\t\t\"y\": -0.6,\n\t\t\t\t\"z\": 0.2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 20,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#212121\"\n\t\t}, {\n\t\t\t\"name\": \"thigh_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.2,\n\t\t\t\t\"y\": 2.4,\n\t\t\t\t\"z\": 1.2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -1.0,\n\t\t\t\t\"y\": 2.5,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#30589F\"\n\t\t}, {\n\t\t\t\"name\": \"cuff_right\",\n\t\t\t\"shape\": \"cylinder\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"radius\": 0.8,\n\t\t\t\t\"height\": 0.6\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -1.0,\n\t\t\t\t\"y\": 1.4,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#EFEFEF\"\n\t\t}, {\n\t\t\t\"name\": \"shin_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 0.8,\n\t\t\t\t\"y\": 2.0,\n\t\t\t\t\"z\": 0.8\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -1.0,\n\t\t\t\t\"y\": 0.3,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#EDC195\"\n\t\t}, {\n\t\t\t\"name\": \"sandal_sole_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.0,\n\t\t\t\t\"y\": 0.2,\n\t\t\t\t\"z\": 2.0\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -1.0,\n\t\t\t\t\"y\": -0.8,\n\t\t\t\t\"z\": 0.4\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 0,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#A47D55\"\n\t\t}, {\n\t\t\t\"name\": \"sandal_strap_right\",\n\t\t\t\"shape\": \"box\",\n\t\t\t\"dimensions\": {\n\t\t\t\t\"x\": 1.2,\n\t\t\t\t\"y\": 0.2,\n\t\t\t\t\"z\": 0.2\n\t\t\t},\n\t\t\t\"position\": {\n\t\t\t\t\"x\": -1.0,\n\t\t\t\t\"y\": -0.6,\n\t\t\t\t\"z\": 0.2\n\t\t\t},\n\t\t\t\"rotation\": {\n\t\t\t\t\"x\": 20,\n\t\t\t\t\"y\": 0,\n\t\t\t\t\"z\": 0\n\t\t\t},\n\t\t\t\"color\": \"#212121\"\n\t\t}]\n\t};\n\n\tconst scale = 0.18;\n\tconst toRadians = (degrees) => degrees * Math.PI / 180;\n\n\tdata.components.forEach(component => {\n\t\tlet geometry;\n\t\tconst dims = component.dimensions;\n\t\tconst color = parseInt(component.color.replace(\"#\", \"0x\"));\n\t\tconst material = new THREE.MeshStandardMaterial({\n\t\t\tcolor: color,\n\t\t\troughness: 0.7,\n\t\t\tmetalness: 0.1\n\t\t});\n\n\t\tswitch (component.shape) {\n\t\t\tcase 'box':\n\t\t\t\tgeometry = new THREE.BoxGeometry(dims.x * scale, dims.y * scale, dims.z * scale);\n\t\t\t\tbreak;\n\t\t\tcase 'cylinder':\n\t\t\t\tgeometry = new THREE.CylinderGeometry(dims.radius * scale, dims.radius * scale, dims.height * scale, 16);\n\t\t\t\tbreak;\n\t\t\tcase 'sphere':\n\t\t\t\tgeometry = new THREE.SphereGeometry(dims.radius * scale, 16, 12);\n\t\t\t\tbreak;\n\t\t\tcase 'capsule': // Fallback for capsule\n\t\t\t\tgeometry = new THREE.CapsuleGeometry(dims.radius * scale, dims.height * scale, 4, 8);\n\t\t\t\tbreak;\n\t\t}\n\n\t\tif (geometry) {\n\t\t\tconst mesh = new THREE.Mesh(geometry, material);\n\t\t\tconst pos = component.position;\n\t\t\tconst rot = component.rotation;\n\n\t\t\tmesh.position.set(pos.x * scale, pos.y * scale, pos.z * scale);\n\t\t\tmesh.rotation.set(toRadians(rot.x), toRadians(rot.y), toRadians(rot.z));\n\n\t\t\tgroup.add(mesh);\n\t\t}\n\t});\n\n\tconst box = new THREE.Box3().setFromObject(group);\n\tconst center = new THREE.Vector3();\n\tbox.getCenter(center);\n\tgroup.position.sub(center);\n\n\treturn group;\n}",
+      "analysis": {
+        "name": "Monkey D. Luffy Low Poly",
+        "components": [
+          {
+            "name": "head",
+            "shape": "capsule",
+            "dimensions": {
+              "radius": 1.4,
+              "height": 0.5
+            },
+            "position": {
+              "x": 0,
+              "y": 8,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "hair",
+            "shape": "sphere",
+            "dimensions": {
+              "radius": 1.6
+            },
+            "position": {
+              "x": 0,
+              "y": 8.2,
+              "z": -0.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#212121"
+          },
+          {
+            "name": "hat_crown",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 2,
+              "height": 1.2
+            },
+            "position": {
+              "x": 0,
+              "y": 9,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#FBC40A"
+          },
+          {
+            "name": "hat_band",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 2.05,
+              "height": 0.4
+            },
+            "position": {
+              "x": 0,
+              "y": 8.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#D92525"
+          },
+          {
+            "name": "hat_brim",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 3.2,
+              "height": 0.15
+            },
+            "position": {
+              "x": 0,
+              "y": 8.3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#FBC40A"
+          },
+          {
+            "name": "neck",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 0.5,
+              "height": 0.6
+            },
+            "position": {
+              "x": 0,
+              "y": 7,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "torso",
+            "shape": "box",
+            "dimensions": {
+              "x": 3,
+              "y": 3.2,
+              "z": 1.8
+            },
+            "position": {
+              "x": 0,
+              "y": 5.4,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "vest_left",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.4,
+              "y": 2.8,
+              "z": 0.2
+            },
+            "position": {
+              "x": 0.8,
+              "y": 5.5,
+              "z": 0.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": -15,
+              "z": 0
+            },
+            "color": "#D92525"
+          },
+          {
+            "name": "vest_right",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.4,
+              "y": 2.8,
+              "z": 0.2
+            },
+            "position": {
+              "x": -0.8,
+              "y": 5.5,
+              "z": 0.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 15,
+              "z": 0
+            },
+            "color": "#D92525"
+          },
+          {
+            "name": "sash_waist",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 1.7,
+              "height": 1.2
+            },
+            "position": {
+              "x": 0,
+              "y": 3.7,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#FBC40A"
+          },
+          {
+            "name": "sash_tail",
+            "shape": "box",
+            "dimensions": {
+              "x": 2.5,
+              "y": 0.8,
+              "z": 0.2
+            },
+            "position": {
+              "x": 2.2,
+              "y": 3.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -30
+            },
+            "color": "#FBC40A"
+          },
+          {
+            "name": "upper_arm_right",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.5,
+              "y": 0.8,
+              "z": 0.8
+            },
+            "position": {
+              "x": -2.2,
+              "y": 6.3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 70
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "forearm_right",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.8,
+              "y": 0.7,
+              "z": 0.7
+            },
+            "position": {
+              "x": -3.8,
+              "y": 6.8,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 5
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "fist_right",
+            "shape": "box",
+            "dimensions": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "position": {
+              "x": -5,
+              "y": 6.8,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 5
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "upper_arm_left",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.5,
+              "y": 0.8,
+              "z": 0.8
+            },
+            "position": {
+              "x": 2.2,
+              "y": 6.3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -70
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "forearm_left",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.8,
+              "y": 0.7,
+              "z": 0.7
+            },
+            "position": {
+              "x": 3.2,
+              "y": 5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 20
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "fist_left",
+            "shape": "box",
+            "dimensions": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "position": {
+              "x": 4.4,
+              "y": 4.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 20
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "thigh_left",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.4,
+              "y": 2.4,
+              "z": 1.4
+            },
+            "position": {
+              "x": 1,
+              "y": 2.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#30589F"
+          },
+          {
+            "name": "cuff_left",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 0.9,
+              "height": 0.6
+            },
+            "position": {
+              "x": 1,
+              "y": 1.4,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#EFEFEF"
+          },
+          {
+            "name": "shin_left",
+            "shape": "box",
+            "dimensions": {
+              "x": 0.8,
+              "y": 2.2,
+              "z": 0.8
+            },
+            "position": {
+              "x": 1.2,
+              "y": 0.2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "sandal_left",
+            "shape": "box",
+            "dimensions": {
+              "x": 1,
+              "y": 0.2,
+              "z": 1.8
+            },
+            "position": {
+              "x": 1.2,
+              "y": -0.9,
+              "z": 0.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#A47D55"
+          },
+          {
+            "name": "thigh_right",
+            "shape": "box",
+            "dimensions": {
+              "x": 1.4,
+              "y": 2.4,
+              "z": 1.4
+            },
+            "position": {
+              "x": -1,
+              "y": 2.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#30589F"
+          },
+          {
+            "name": "cuff_right",
+            "shape": "cylinder",
+            "dimensions": {
+              "radius": 0.9,
+              "height": 0.6
+            },
+            "position": {
+              "x": -1,
+              "y": 1.4,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#EFEFEF"
+          },
+          {
+            "name": "shin_right",
+            "shape": "box",
+            "dimensions": {
+              "x": 0.8,
+              "y": 2.2,
+              "z": 0.8
+            },
+            "position": {
+              "x": -1.2,
+              "y": 0.2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#EDC195"
+          },
+          {
+            "name": "sandal_right",
+            "shape": "box",
+            "dimensions": {
+              "x": 1,
+              "y": 0.2,
+              "z": 1.8
+            },
+            "position": {
+              "x": -1.2,
+              "y": -0.9,
+              "z": 0.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "color": "#A47D55"
+          }
+        ],
+        "materials": [
+          "MeshStandardMaterial with flatShading"
+        ],
+        "dominantColors": [
+          "#FBC40A",
+          "#D92525",
+          "#30589F",
+          "#EDC195",
+          "#212121"
+        ],
+        "styleNotes": "A low-poly, faceted 3D model with a cartoonish, cel-shaded appearance. The character is constructed from visible geometric primitives, primarily boxes and cylinders, giving it a blocky and stylized look. The model is untextured, relying on flat material colors. This asset is suitable for games requiring a simple, performant, and distinct art style."
+      },
+      "meta": {},
+      "createdAt": "2025-09-18T00:30:11.136Z",
+      "updatedAt": "2025-09-18T00:30:11.136Z"
+    }
+  ]
+}

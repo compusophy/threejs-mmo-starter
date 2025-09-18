@@ -196,6 +196,25 @@ class Game3D {
 
         // Resize handler
         window.addEventListener('resize', () => this.onWindowResize());
+
+        // Keyboard shortcuts
+        window.addEventListener('keydown', (event) => {
+            // Character Loader: Press 'C' to open
+            if (event.key.toLowerCase() === 'c' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                event.preventDefault();
+                this.openCharacterLoaderUI();
+            }
+            // Item Loader: Press 'I' to open
+            if (event.key.toLowerCase() === 'i' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                event.preventDefault();
+                this.openItemLoaderUI();
+            }
+            // Workbench: Press 'W' to open
+            if (event.key.toLowerCase() === 'w' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                event.preventDefault();
+                this.openWorkbenchUI();
+            }
+        });
     }
 
     setupLighting() {
@@ -254,6 +273,8 @@ class Game3D {
         // this.createBuildings(); // REMOVED: Buildings disabled
         this.createTrees();
         // this.createWater(); // REMOVED: Water disabled
+        this.createWorkbench(); // Add workbench near center
+        this.createItemLoader(); // Add item loader nearby
 
         // Add world boundaries (walls)
         this.createWorldBoundaries();
@@ -826,8 +847,29 @@ class Game3D {
 
             // Try to find a valid position that doesn't overlap with existing obstacles
             while (!validPosition && attempts < maxAttempts) {
-                treeX = (Math.random() - 0.5) * 80;
-                treeZ = (Math.random() - 0.5) * 80;
+                // Place trees near the edges of the 200x200 world instead of center
+                const worldHalfSize = 100; // World extends from -100 to 100
+                const side = Math.floor(Math.random() * 4); // 0:North,1:East,2:South,3:West
+                const edgeInset = 8 + Math.random() * 8; // keep inside walls and away from path edges
+                const along = (Math.random() - 0.5) * 160; // range along the edge (-80..80)
+
+                if (side === 0) { // North edge (+Z)
+                    treeX = along;
+                    treeZ = worldHalfSize - edgeInset;
+                } else if (side === 1) { // East edge (+X)
+                    treeX = worldHalfSize - edgeInset;
+                    treeZ = along;
+                } else if (side === 2) { // South edge (-Z)
+                    treeX = along;
+                    treeZ = -worldHalfSize + edgeInset;
+                } else { // West edge (-X)
+                    treeX = -worldHalfSize + edgeInset;
+                    treeZ = along;
+                }
+
+                // Add slight jitter to avoid perfectly straight lines
+                treeX += (Math.random() - 0.5) * 2;
+                treeZ += (Math.random() - 0.5) * 2;
 
                 const testPosition = new THREE.Vector3(treeX, 0, treeZ);
                 validPosition = true;
@@ -875,6 +917,1117 @@ class Game3D {
         }
 
         console.log(`Created ${this.obstacles.filter(o => o.type === 'tree').length} trees with proper spacing`);
+    }
+
+    createWorkbench() {
+        // Create a wooden workbench near the center of the map
+        const workbenchPosition = new THREE.Vector3(3, 0, 3); // Slightly offset from center
+
+        // Create workbench group
+        const workbench = new THREE.Group();
+        workbench.position.copy(workbenchPosition);
+
+        // Wood material for the workbench
+        const woodMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Saddle brown
+
+        // Create the tabletop (flat surface)
+        const tabletopGeometry = new THREE.BoxGeometry(3, 0.1, 2);
+        const tabletop = new THREE.Mesh(tabletopGeometry, woodMaterial);
+        tabletop.position.set(0, 0.8, 0); // Top surface at comfortable working height
+        tabletop.castShadow = true;
+        tabletop.receiveShadow = true;
+        workbench.add(tabletop);
+
+        // Create legs (4 legs at corners)
+        const legGeometry = new THREE.BoxGeometry(0.1, 0.7, 0.1);
+        const legPositions = [
+            [-1.3, 0.35, -0.9], // Front left
+            [1.3, 0.35, -0.9],  // Front right
+            [-1.3, 0.35, 0.9],  // Back left
+            [1.3, 0.35, 0.9]    // Back right
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, woodMaterial);
+            leg.position.set(pos[0], pos[1], pos[2]);
+            leg.castShadow = true;
+            leg.receiveShadow = true;
+            workbench.add(leg);
+        });
+
+        // Add some tools on the workbench (optional decorative elements)
+        // Hammer handle
+        const hammerHandleGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.4);
+        const hammerHandle = new THREE.Mesh(hammerHandleGeometry, woodMaterial);
+        hammerHandle.position.set(0.5, 0.95, 0.3);
+        hammerHandle.rotation.z = Math.PI / 4;
+        hammerHandle.castShadow = true;
+        workbench.add(hammerHandle);
+
+        // Add character loader button to workbench
+        const characterButtonGeometry = new THREE.BoxGeometry(0.8, 0.05, 0.3);
+        const characterButtonMaterial = new THREE.MeshLambertMaterial({ color: 0x8b5cf6 });
+        const characterButton = new THREE.Mesh(characterButtonGeometry, characterButtonMaterial);
+        characterButton.position.set(-0.5, 0.95, 0.5);
+        characterButton.castShadow = true;
+        characterButton.userData = { type: 'character_loader_button' };
+        workbench.add(characterButton);
+
+        // Add text label for character button
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px Arial';
+        ctx.fillText('Character Loader', 4, 20);
+        const texture = new THREE.CanvasTexture(canvas);
+        const textMaterial = new THREE.MeshLambertMaterial({ map: texture, transparent: true });
+        const textGeometry = new THREE.PlaneGeometry(0.6, 0.15);
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        textMesh.position.set(-0.5, 0.98, 0.5);
+        textMesh.rotation.x = -Math.PI / 2;
+        workbench.add(textMesh);
+
+        // Hammer head
+        const hammerHeadGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.15);
+        const hammerHeadMaterial = new THREE.MeshLambertMaterial({ color: 0x2F2F2F }); // Dark gray
+        const hammerHead = new THREE.Mesh(hammerHeadGeometry, hammerHeadMaterial);
+        hammerHead.position.set(0.7, 0.95, 0.3);
+        hammerHead.castShadow = true;
+        workbench.add(hammerHead);
+
+        // Add workbench to scene
+        this.scene.add(workbench);
+
+        // Create obstacle for collision detection
+        const workbenchObstacle = new Obstacle(workbenchPosition, {
+            type: 'workbench',
+            collisionBounds: { width: 3, height: 2 },
+            blocksMovement: true,
+            blocksLineOfSight: false
+        });
+        this.obstacles.push(workbenchObstacle);
+        workbench.userData = { type: 'workbench', obstacle: workbenchObstacle };
+
+        console.log('Created workbench near center of map at:', workbenchPosition.x, workbenchPosition.z);
+    }
+
+    createItemLoader() {
+        // Place an item loader station ~20 units from workbench
+        const pos = new THREE.Vector3(20, 0, 3);
+        const stand = new THREE.Group();
+        stand.position.copy(pos);
+
+        const mat = new THREE.MeshLambertMaterial({ color: 0x4B5563 });
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.4, 16), mat);
+        base.position.y = 0.2;
+        base.castShadow = true; base.receiveShadow = true;
+        stand.add(base);
+
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 2.2, 12), mat);
+        pillar.position.y = 1.3;
+        pillar.castShadow = true; pillar.receiveShadow = true;
+        stand.add(pillar);
+
+        const pad = new THREE.Mesh(new THREE.CircleGeometry(1.2, 24), new THREE.MeshLambertMaterial({ color: 0x93C5FD }));
+        pad.rotation.x = -Math.PI/2; pad.position.y = 0.02;
+        pad.receiveShadow = true;
+        stand.add(pad);
+
+        stand.userData = { type: 'item_loader' };
+        this.scene.add(stand);
+
+        // Collision obstacle
+        const obstacle = new Obstacle(pos, {
+            type: 'item_loader',
+            collisionBounds: { width: 3, height: 3 },
+            blocksMovement: true
+        });
+        this.obstacles.push(obstacle);
+        stand.userData.obstacle = obstacle;
+
+        console.log('Created item loader at:', pos.x, pos.z);
+    }
+
+    // === WORKBENCH UI AND AI INTEGRATION ===
+    openWorkbenchUI() {
+        if (document.getElementById('workbench-ui')) {
+            document.getElementById('workbench-ui').style.display = 'block';
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.id = 'workbench-ui';
+        container.style.cssText = 'position:fixed; right:16px; top:16px; width:360px; background:#1e1e1ecc; color:#fff; padding:12px; border-radius:8px; z-index:9999; font-family:Arial, sans-serif; backdrop-filter: blur(6px);';
+        container.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-weight:bold;">Workbench - AI Asset Generator</div>
+                <button id="wb-close" style="background:#444; color:#fff; border:none; padding:4px 8px; cursor:pointer;">X</button>
+            </div>
+            <label style="font-size:12px;">Describe your item</label>
+            <textarea id="wb-prompt" style="width:100%; height:70px; margin:4px 0; background:#2a2a2a; color:#fff; border:1px solid #555;">A low-poly medieval iron sword with wooden hilt, game-ready</textarea>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+                <button id="wb-generate" style="flex:1; background:#3b82f6; color:#fff; border:none; padding:6px; cursor:pointer;">Generate Image</button>
+                <button id="wb-analyze" style="flex:1; background:#22c55e; color:#fff; border:none; padding:6px; cursor:pointer;">Analyze</button>
+                <button id="wb-code" style="flex:1; background:#a855f7; color:#fff; border:none; padding:6px; cursor:pointer;">Generate 3D</button>
+            </div>
+            <div style="margin-top:6px;">
+                <div style="font-size:12px; margin-bottom:4px;">Image</div>
+                <img id="wb-image" style="width:100%; height:140px; object-fit:contain; background:#111; border:1px solid #333;" />
+            </div>
+            <div style="margin-top:6px;">
+                <div style="font-size:12px; margin-bottom:4px;">Analysis</div>
+                <textarea id="wb-analysis" style="width:100%; height:110px; background:#111; color:#9f9; border:1px solid #333; font-family:monospace;"></textarea>
+            </div>
+            <div style="margin-top:6px;">
+                <div style="font-size:12px; margin-bottom:4px;">Code</div>
+                <textarea id="wb-code-view" style="width:100%; height:140px; background:#111; color:#cff; border:1px solid #333; font-family:monospace;"></textarea>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:8px;">
+                <button id="wb-preview" style="flex:1; background:#f59e0b; color:#111; border:none; padding:6px; cursor:pointer;">Preview in World</button>
+                <button id="wb-save" style="flex:1; background:#e5e7eb; color:#111; border:none; padding:6px; cursor:pointer;">Save Asset</button>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:6px;">
+                <input id="wb-name" placeholder="Name (e.g., Iron Sword)" style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #555; padding:6px;" />
+                <button id="wb-save-lib" style="background:#3B82F6; color:#fff; border:none; padding:6px 10px; cursor:pointer;">Save to Library</button>
+            </div>
+            <div style="margin-top:6px; display:flex; gap:6px; align-items:center;">
+                <button id="wb-improve" style="background:#10b981; color:#fff; border:none; padding:6px 10px; cursor:pointer;">Improve</button>
+                <input id="wb-improve-notes" placeholder="Optional guidance (e.g., 'half the size')" style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #555; padding:6px;" />
+            </div>
+            <div id="wb-status" style="margin-top:6px; font-size:12px; opacity:0.9;">Idle</div>
+        `;
+        document.body.appendChild(container);
+
+        this.setupWorkbenchUIHandlers();
+    }
+
+    openItemLoaderUI() {
+        if (document.getElementById('loader-ui')) {
+            document.getElementById('loader-ui').style.display = 'block';
+            this.refreshItemList();
+            return;
+        }
+        const container = document.createElement('div');
+        container.id = 'loader-ui';
+        container.style.cssText = 'position:fixed; left:16px; top:16px; width:340px; background:#1e1e1ecc; color:#fff; padding:12px; border-radius:8px; z-index:9999; font-family:Arial, sans-serif; backdrop-filter: blur(6px);';
+        container.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-weight:bold;">Item Loader</div>
+                <button id="ld-close" style="background:#444; color:#fff; border:none; padding:4px 8px; cursor:pointer;">X</button>
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input id="ld-filter" placeholder="Filter by name..." style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #555; padding:6px;" />
+                <button id="ld-refresh" style="background:#3B82F6; color:#fff; border:none; padding:6px 10px; cursor:pointer;">Refresh</button>
+            </div>
+            <div id="ld-list" style="max-height:220px; overflow:auto; background:#111; border:1px solid #333; padding:6px;"></div>
+            <div style="display:flex; gap:6px; margin-top:8px;">
+                <button id="ld-spawn" style="flex:1; background:#f59e0b; color:#111; border:none; padding:6px; cursor:pointer;">Spawn</button>
+                <button id="ld-delete" style="flex:1; background:#ef4444; color:#fff; border:none; padding:6px; cursor:pointer;">Delete</button>
+            </div>
+            <!-- Button order matches labeling: Left on the left, Right on the right -->
+            <div style="display:flex; gap:6px; margin-top:6px;">
+                <button id="ld-equip-left" style="flex:1; background:#06b6d4; color:#fff; border:none; padding:6px; cursor:pointer;">Equip Left Hand</button>
+                <button id="ld-equip-right" style="flex:1; background:#10b981; color:#fff; border:none; padding:6px; cursor:pointer;">Equip Right Hand</button>
+            </div>
+            <div id="ld-status" style="margin-top:6px; font-size:12px; opacity:0.9;">Idle</div>
+        `;
+        document.body.appendChild(container);
+
+        const $ = (id) => document.getElementById(id);
+        const status = (m) => { const s = $('ld-status'); if (s) s.textContent = m; };
+        $('ld-close').onclick = () => { $('loader-ui').style.display = 'none'; };
+        $('ld-refresh').onclick = () => this.refreshItemList();
+        $('ld-spawn').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="ld-select"]:checked');
+                if (!sel) { status('Select an item.'); return; }
+                const itemId = sel.value;
+                const item = await this.fetchItemById(itemId);
+                if (!item?.code) { status('Item has no code.'); return; }
+                const group = this.evaluateGeneratedCode(item.code);
+                if (!group) { status('Code eval failed.'); return; }
+                const wrapper = this.prepareGeneratedGroupForGroundPlacement(group);
+                // Spawn in front of player
+                const ahead = new THREE.Vector3(0,0, 1).applyAxisAngle(new THREE.Vector3(0,1,0), this.player.rotation.y).multiplyScalar(3);
+                wrapper.position.set(this.player.position.x + ahead.x, 0.02, this.player.position.z + ahead.z);
+                wrapper.userData = { type: 'spawned_item', sourceId: itemId };
+                this.scene.add(wrapper);
+                status(`Spawned ${item.name}`);
+            } catch (e) { console.error(e); status('Spawn failed.'); }
+        };
+        // Equip Right Hand button: equips to the hand on the screen's RIGHT side
+        // Tip: set this.swapHandUI = true to invert mapping if your camera/mirror flips
+        $('ld-equip-right').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="ld-select"]:checked');
+                if (!sel) { status('Select an item.'); return; }
+                const itemId = sel.value;
+                const item = await this.fetchItemById(itemId);
+                if (!item?.code) { status('Item has no code.'); return; }
+                const ok = this.equipScreenRightHandFromCode(item.code);
+                const mapped = this.getVisualRightHandName();
+                status(ok ? `Equipped ${item.name} in ${this.swapHandUI ? (mapped==='right'?'left':'right') : mapped} hand.` : 'Equip failed.');
+            } catch (e) { console.error(e); status('Equip failed.'); }
+        };
+
+        // Equip Left Hand button: equips to the hand on the screen's LEFT side
+        // Tip: set this.swapHandUI = true to invert mapping if your camera/mirror flips
+        $('ld-equip-left').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="ld-select"]:checked');
+                if (!sel) { status('Select an item.'); return; }
+                const itemId = sel.value;
+                const item = await this.fetchItemById(itemId);
+                if (!item?.code) { status('Item has no code.'); return; }
+                const ok = this.equipScreenLeftHandFromCode(item.code);
+                const mapped = this.getVisualRightHandName() === 'right' ? 'left' : 'right';
+                status(ok ? `Equipped ${item.name} in ${this.swapHandUI ? (mapped==='right'?'left':'right') : mapped} hand.` : 'Equip failed.');
+            } catch (e) { console.error(e); status('Equip failed.'); }
+        };
+
+        $('ld-delete').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="ld-select"]:checked');
+                if (!sel) { status('Select an item to delete.'); return; }
+                const itemId = sel.value;
+                await fetch(`http://localhost:8787/api/items/${itemId}`, { method: 'DELETE' });
+                status('Item deleted.');
+                this.refreshItemList();
+            } catch (e) { console.error(e); status('Delete failed.'); }
+        };
+
+        this.refreshItemList();
+    }
+
+
+
+    // === CHARACTER LOADER UI ===
+    openCharacterLoaderUI() {
+        if (document.getElementById('character-ui')) {
+            document.getElementById('character-ui').style.display = 'block';
+            this.refreshCharacterList();
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.id = 'character-ui';
+        container.style.cssText = 'position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:380px; background:#1e1e1ecc; color:#fff; padding:16px; border-radius:12px; z-index:9999; font-family:Arial, sans-serif; backdrop-filter: blur(6px); box-shadow:0 8px 32px rgba(0,0,0,0.3);';
+        container.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-weight:bold; font-size:16px;">🧙 Character Loader</div>
+                <button id="char-close" style="background:#444; color:#fff; border:none; padding:6px 10px; cursor:pointer; border-radius:4px;">✕</button>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <input id="char-filter" placeholder="Filter characters..." style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #555; padding:8px; border-radius:4px;" />
+                <button id="char-refresh" style="background:#3B82F6; color:#fff; border:none; padding:8px 12px; cursor:pointer; border-radius:4px;">🔄</button>
+            </div>
+
+            <div id="char-list" style="max-height:250px; overflow:auto; background:#111; border:1px solid #333; padding:8px; border-radius:4px; margin-bottom:12px;">
+                Loading characters...
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+                <button id="char-spawn" style="flex:2; background:#f59e0b; color:#111; border:none; padding:10px; cursor:pointer; border-radius:4px; font-weight:600;">🗺️ Spawn in World</button>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+                <button id="char-preview" style="flex:1; background:#10b981; color:#fff; border:none; padding:8px; cursor:pointer; border-radius:4px; font-weight:600;">👁️ Preview</button>
+                <button id="char-set-player" style="flex:1; background:#8b5cf6; color:#fff; border:none; padding:8px; cursor:pointer; border-radius:4px; font-weight:600;">👤 Set Player</button>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button id="char-delete" style="flex:1; background:#ef4444; color:#fff; border:none; padding:8px; cursor:pointer; border-radius:4px; font-weight:600;">🗑️ Delete</button>
+            </div>
+
+            <div id="char-status" style="margin-top:12px; font-size:13px; opacity:0.9; text-align:center;">Ready to load characters</div>
+        `;
+        document.body.appendChild(container);
+
+        const $ = (id) => document.getElementById(id);
+        const status = (m) => { const s = $('char-status'); if (s) s.textContent = m; };
+
+        $('char-close').onclick = () => { $('character-ui').style.display = 'none'; };
+        $('char-refresh').onclick = () => this.refreshCharacterList();
+
+        $('char-spawn').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="char-select"]:checked');
+                if (!sel) { status('Select a character first.'); return; }
+                const charId = sel.value;
+                const character = await this.fetchItemById(charId);
+                if (!character?.code) { status('Character has no code.'); return; }
+
+                const group = this.evaluateGeneratedCode(character.code);
+                if (!group) { status('Code evaluation failed.'); return; }
+
+                const wrapper = this.prepareGeneratedGroupForGroundPlacement(group);
+                const ahead = new THREE.Vector3(0,0, 1).applyAxisAngle(new THREE.Vector3(0,1,0), this.player.rotation.y).multiplyScalar(4);
+                wrapper.position.set(this.player.position.x + ahead.x, 0.02, this.player.position.z + ahead.z);
+                wrapper.userData = { type: 'spawned_character', sourceId: charId };
+                this.scene.add(wrapper);
+                status(`Spawned ${character.name} in world`);
+            } catch (e) { console.error(e); status('Spawn failed.'); }
+        };
+
+        $('char-preview').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="char-select"]:checked');
+                if (!sel) { status('Select a character first.'); return; }
+                const charId = sel.value;
+                const character = await this.fetchItemById(charId);
+                if (!character?.code) { status('Character has no code.'); return; }
+
+                const group = this.evaluateGeneratedCode(character.code);
+                if (!group) { status('Code evaluation failed.'); return; }
+
+                const wrapper = this.prepareGeneratedGroupForGroundPlacement(group);
+                wrapper.position.set(6, 0.02, 6); // Near workbench
+                wrapper.userData = { type: 'character_preview', sourceId: charId };
+                this.scene.add(wrapper);
+                status(`Previewing ${character.name}`);
+            } catch (e) { console.error(e); status('Preview failed.'); }
+        };
+
+        $('char-set-player').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="char-select"]:checked');
+                if (!sel) { status('Select a character first.'); return; }
+                const charId = sel.value;
+                const character = await this.fetchItemById(charId);
+                if (!character?.code) { status('Character has no code.'); return; }
+
+                // Replace the current player with the new character
+                const success = await this.setPlayerCharacter(character.code, character.name);
+                if (success) {
+                    status(`✅ Now playing as ${character.name}!`);
+                } else {
+                    status('❌ Failed to set character.');
+                }
+            } catch (e) { console.error(e); status('Failed to set character.'); }
+        };
+
+        $('char-delete').onclick = async () => {
+            try {
+                const sel = document.querySelector('input[name="char-select"]:checked');
+                if (!sel) { status('Select a character to delete.'); return; }
+                const charId = sel.value;
+                await fetch(`http://localhost:8787/api/items/${charId}`, { method: 'DELETE' });
+                status('Character deleted.');
+                this.refreshCharacterList();
+            } catch (e) { console.error(e); status('Delete failed.'); }
+        };
+
+        this.refreshCharacterList();
+    }
+
+    async refreshCharacterList() {
+        const container = document.getElementById('char-list');
+        if (!container) return;
+        container.innerHTML = 'Loading characters...';
+        try {
+            const resp = await fetch('http://localhost:8787/api/items');
+            const data = await resp.json();
+            const characters = (data?.items || []).filter(item => item.category === 'character');
+            const filter = (document.getElementById('char-filter')?.value || '').toLowerCase();
+            const filtered = characters.filter(c => !filter || c.name.toLowerCase().includes(filter));
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.7;">No characters found.<br/>Create one in the Workbench and save it!</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(c => `
+                <label style="display:flex; align-items:center; gap:8px; padding:8px; border-bottom:1px solid #222; border-radius:4px; margin-bottom:4px; background:#1a1a1a;">
+                    <input type="radio" name="char-select" value="${c.id}" style="margin:0;" />
+                    <div style="flex:1;">
+                        <div style="font-weight:600; color:#fff;">${c.name}</div>
+                        <div style="opacity:0.7; font-size:12px; color:#ccc;">Character • ${new Date(c.createdAt || Date.now()).toLocaleDateString()}</div>
+                    </div>
+                    <div style="font-size:18px;">${c.name.includes('Horse') ? '🐴' : c.name.includes('Human') ? '👤' : '🧙'}</div>
+                </label>
+            `).join('');
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = 'Failed to load characters.';
+        }
+    }
+
+    async     setPlayerCharacter(code, name) {
+        try {
+            // Remove current player from scene
+            if (this.player && this.player.parent) {
+                this.player.parent.remove(this.player);
+            }
+
+            // Create new character from code
+            const newCharacterGroup = this.evaluateGeneratedCode(code);
+            if (!newCharacterGroup) {
+                console.error('Failed to evaluate character code');
+                return false;
+            }
+
+            // Mark this as a custom character for animation system
+            newCharacterGroup.userData = {
+                type: 'player',
+                customCharacter: true,
+                characterName: name
+            };
+
+            // Add component names to meshes for animation identification
+            this.addComponentNamesToCharacter(newCharacterGroup, code);
+
+            // Set up the new character as player
+            this.player = newCharacterGroup;
+            this.player.name = name || 'Custom Character';
+
+            // FIX HORSE POSITIONING: Calculate proper ground level positioning
+            this.fixCharacterGroundPosition(code);
+
+            // Add to scene
+            this.scene.add(this.player);
+
+            // Update camera to follow new character
+            if (this.camera && this.controls) {
+                this.controls.target.copy(this.player.position);
+                this.controls.target.y += 2; // Look at character's head area
+            }
+
+            console.log(`Player character changed to: ${name} (with animation support)`);
+            return true;
+        } catch (e) {
+            console.error('Failed to set player character:', e);
+            return false;
+        }
+    }
+
+    addComponentNamesToCharacter(characterGroup, code) {
+        try {
+            // Parse component names from the code
+            const componentMatches = code.match(/"name":\s*"([^"]+)"/g);
+            if (!componentMatches) return;
+
+            const componentNames = componentMatches.map(match =>
+                match.replace(/"name":\s*"/, '').replace(/"/, '')
+            );
+
+            // Add component names to meshes in traversal order
+            let componentIndex = 0;
+            characterGroup.traverse((child) => {
+                if (child.isMesh && componentIndex < componentNames.length) {
+                    child.userData = child.userData || {};
+                    child.userData.componentName = componentNames[componentIndex];
+                    componentIndex++;
+                }
+            });
+
+        } catch (e) {
+            console.warn('Failed to add component names to character:', e);
+        }
+    }
+
+    fixCharacterGroundPosition(code) {
+        try {
+            // Calculate bounding box to find the lowest point
+            const bbox = new THREE.Box3().setFromObject(this.player);
+            const lowestPoint = bbox.min.y;
+            const highestPoint = bbox.max.y;
+            const centerY = (lowestPoint + highestPoint) / 2;
+
+            // Check if this character has a vertical offset in the code (common in generated characters)
+            const verticalOffsetMatch = code.match(/verticalOffset\s*=\s*([^;]+)/);
+            let verticalOffset = 0;
+
+            if (verticalOffsetMatch) {
+                const offsetExpression = verticalOffsetMatch[1].trim();
+                const scaleMatch = code.match(/scale\s*=\s*([^;]+)/);
+                if (scaleMatch) {
+                    const scaleValue = parseFloat(scaleMatch[1].trim());
+                    if (offsetExpression.includes('* scale') || offsetExpression.includes('-')) {
+                        // Extract the negative multiplier (like -6.5)
+                        const multiplierMatch = offsetExpression.match(/-?\d+\.?\d*/);
+                        if (multiplierMatch) {
+                            const multiplier = parseFloat(multiplierMatch[0]);
+                            verticalOffset = multiplier * scaleValue;
+                        }
+                    }
+                }
+            }
+
+            // Position so the lowest point (feet/hooves) touch the ground (Y=0)
+            // Compensate for any vertical offset in the generated code
+            let groundLevel = -lowestPoint;
+
+            // If there's a negative vertical offset (pushing character down), compensate
+            if (verticalOffset < 0) {
+                groundLevel += Math.abs(verticalOffset);
+            }
+
+            // Apply the positioning
+            this.player.position.set(0, groundLevel, 0);
+
+            console.log(`Character positioned: lowest=${lowestPoint.toFixed(3)}, offset=${verticalOffset.toFixed(3)}, final Y=${groundLevel.toFixed(3)}`);
+
+        } catch (e) {
+            console.warn('Failed to fix character ground position, using default:', e);
+            // Fallback to basic positioning
+            this.player.position.set(0, 0, 0);
+        }
+    }
+
+    async refreshItemList() {
+        const container = document.getElementById('ld-list');
+        if (!container) return;
+        container.innerHTML = 'Loading...';
+        try {
+            const resp = await fetch('http://localhost:8787/api/items');
+            const data = await resp.json();
+            const items = (data?.items || []);
+            const filter = (document.getElementById('ld-filter')?.value || '').toLowerCase();
+            const filtered = items.filter(i => !filter || i.name.toLowerCase().includes(filter));
+            container.innerHTML = filtered.map(i => `
+                <label style="display:flex; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid #222;">
+                    <input type="radio" name="ld-select" value="${i.id}" />
+                    <div style="flex:1;">
+                        <div style="font-weight:600;">${i.name}</div>
+                        <div style="opacity:0.8; font-size:12px;">${i.category || 'misc'}</div>
+                    </div>
+                </label>
+            `).join('');
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = 'Failed to load items.';
+        }
+    }
+
+    async fetchItemById(id) {
+        const resp = await fetch(`http://localhost:8787/api/items/${id}`);
+        return await resp.json();
+    }
+
+    setupWorkbenchUIHandlers() {
+        const $ = (id) => document.getElementById(id);
+        const status = (msg) => { const s = $('wb-status'); if (s) s.textContent = msg; };
+
+        $('wb-close').onclick = () => {
+            const ui = $('workbench-ui');
+            if (ui) ui.style.display = 'none';
+        };
+
+        $('wb-generate').onclick = async () => {
+            try {
+                status('Generating image...');
+                const prompt = $('wb-prompt').value.trim();
+                const resp = await fetch('http://localhost:8787/api/generate-image', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, fileNamePrefix: 'wb-item', forceGreenScreen: true })
+                });
+                const data = await resp.json();
+                if (data?.image?.dataUrl) {
+                    // Standardize to 1024x1024 PNG with transparent bg
+                    const standardized = await this.standardizeImage(data.image.dataUrl, 1024, 1024);
+                    $('wb-image').src = standardized;
+                    status('Image generated.');
+                } else {
+                    status('No image received.');
+                }
+            } catch (e) {
+                console.error(e);
+                status('Image generation failed. Check server/GEMINI_API_KEY.');
+            }
+        };
+
+        $('wb-analyze').onclick = async () => {
+            try {
+                status('Analyzing image...');
+                const img = $('wb-image').src;
+                if (!img) { status('No image to analyze.'); return; }
+                const resp = await fetch('http://localhost:8787/api/analyze-image', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageDataUrl: img })
+                });
+                const data = await resp.json();
+                this.latestWorkbenchAnalysis = data.analysis || data.raw || null;
+                try { $('wb-analysis').value = JSON.stringify(this.latestWorkbenchAnalysis, null, 2); } catch {}
+                status('Analysis complete.');
+            } catch (e) {
+                console.error(e);
+                status('Analysis failed.');
+            }
+        };
+
+        $('wb-code').onclick = async () => {
+            try {
+                status('Generating Three.js code...');
+                if (!this.latestWorkbenchAnalysis) { status('Run Analyze first.'); return; }
+                const promptAddon = 'Keep scale reasonable (max dimension ~2 units).';
+                const resp = await fetch('http://localhost:8787/api/generate-threejs', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ analysis: this.latestWorkbenchAnalysis, promptAddon })
+                });
+                const data = await resp.json();
+                if (data?.code) {
+                    $('wb-code-view').value = data.code;
+                    status('Three.js code generated.');
+                } else {
+                    status('No code received.');
+                }
+            } catch (e) {
+                console.error(e);
+                status('Code generation failed.');
+            }
+        };
+
+        $('wb-preview').onclick = () => {
+            try {
+                status('Placing preview in world...');
+                const code = $('wb-code-view').value;
+                if (!code) { status('No code to preview.'); return; }
+                const group = this.evaluateGeneratedCode(code);
+                if (!group) { status('Failed to evaluate code.'); return; }
+                // Prepare and place near workbench without ground clipping
+                const wrapper = this.prepareGeneratedGroupForGroundPlacement(group);
+                wrapper.position.set(6, 0.02, 3);
+                wrapper.userData = { type: 'generated_item' };
+                this.scene.add(wrapper);
+                this.latestGeneratedGroup = wrapper;
+                status('Preview placed.');
+            } catch (e) {
+                console.error(e);
+                status('Preview failed.');
+            }
+        };
+
+        $('wb-save').onclick = () => {
+            try {
+                status('Saving asset (client-side)...');
+                const code = $('wb-code-view').value;
+                if (!code) { status('No code to save.'); return; }
+                const blob = new Blob([code], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `generated-item-${Date.now()}.js`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                status('Asset saved (downloaded).');
+            } catch (e) {
+                console.error(e);
+                status('Save failed.');
+            }
+        };
+
+        $('wb-save-lib').onclick = async () => {
+            try {
+                status('Saving to library...');
+                const name = document.getElementById('wb-name').value.trim() || `Item ${Date.now()}`;
+                const code = document.getElementById('wb-code-view').value;
+                if (!code) { status('No code to save.'); return; }
+                const analysis = this.latestWorkbenchAnalysis || null;
+
+                // Auto-detect if this is a character (has body parts, limbs, etc.)
+                let category = 'weapon';
+
+                // More comprehensive character detection patterns
+                const isCharacter = (
+                    // Head variations
+                    code.includes('"name": "head"') ||
+                    code.includes('"name": "Head"') ||
+                    code.includes('"name": "HEAD"') ||
+                    // Torso/body variations
+                    code.includes('"name": "torso"') ||
+                    code.includes('"name": "Torso"') ||
+                    code.includes('"name": "TORSO"') ||
+                    code.includes('"name": "body"') ||
+                    code.includes('"name": "Body"') ||
+                    // Arm variations
+                    code.includes('"name": "left_upper_arm"') ||
+                    code.includes('"name": "right_upper_arm"') ||
+                    code.includes('"name": "left_arm"') ||
+                    code.includes('"name": "right_arm"') ||
+                    code.includes('"name": "Arm_') ||
+                    code.includes('"name": "arm_') ||
+                    // Leg variations
+                    code.includes('"name": "left_upper_leg"') ||
+                    code.includes('"name": "right_upper_leg"') ||
+                    code.includes('"name": "left_leg"') ||
+                    code.includes('"name": "right_leg"') ||
+                    code.includes('"name": "Leg_') ||
+                    code.includes('"name": "leg_') ||
+                    // Hand variations
+                    code.includes('"name": "left_hand"') ||
+                    code.includes('"name": "right_hand"') ||
+                    code.includes('"name": "Hand_') ||
+                    code.includes('"name": "hand_') ||
+                    // Foot/shoe variations
+                    code.includes('"name": "left_foot"') ||
+                    code.includes('"name": "right_foot"') ||
+                    code.includes('"name": "left_shoe"') ||
+                    code.includes('"name": "right_shoe"') ||
+                    // General character indicators
+                    code.includes('"name": "nose"') ||
+                    code.includes('"name": "ear"') ||
+                    code.includes('"name": "eye"')
+                );
+
+                if (isCharacter) {
+                    category = 'character';
+                }
+
+                const resp = await fetch('http://localhost:8787/api/items', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, code, analysis, category })
+                });
+                const data = await resp.json();
+                status(data?.ok ? `Saved to library as ${category}.` : 'Save failed.');
+            } catch (e) { console.error(e); status('Save failed.'); }
+        };
+
+        $('wb-improve').onclick = async () => {
+            try {
+                status('Improving model...');
+                const targetImg = $('wb-image').src;
+                const notes = $('wb-improve-notes').value || '';
+                const code = $('wb-code-view').value;
+                if (!targetImg || !code || !this.latestGeneratedGroup) { status('Need target image, code, and a preview in world first.'); return; }
+
+                // Capture current preview render from canvas
+                const canvas = document.getElementById('game-canvas');
+                if (!canvas) { status('Canvas not found.'); return; }
+                const renderDataUrl = canvas.toDataURL('image/png');
+
+                const resp = await fetch('http://localhost:8787/api/refine', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        targetImageDataUrl: targetImg,
+                        renderImageDataUrl: renderDataUrl,
+                        currentCode: code,
+                        instructions: notes,
+                    })
+                });
+                const data = await resp.json();
+                if (data?.code) {
+                    $('wb-code-view').value = data.code;
+                    status('Improved code received. Previewing...');
+                    // Replace preview
+                    if (this.latestGeneratedGroup) {
+                        this.scene.remove(this.latestGeneratedGroup);
+                    }
+                    const group = this.evaluateGeneratedCode(data.code);
+                    if (group) {
+                        const wrapper = this.prepareGeneratedGroupForGroundPlacement(group);
+                        wrapper.position.set(6, 0.02, 3);
+                        wrapper.userData = { type: 'generated_item' };
+                        this.scene.add(wrapper);
+                        this.latestGeneratedGroup = wrapper;
+                        status('Preview updated.');
+                    } else {
+                        status('Failed to preview improved code.');
+                    }
+                } else {
+                    status('No improved code received.');
+                }
+            } catch (e) {
+                console.error(e);
+                status('Improve failed.');
+            }
+        };
+    }
+
+    evaluateGeneratedCode(code) {
+        try {
+            // Strip markdown fences if present
+            const stripped = code.replace(/```[a-z]*\n([\s\S]*?)```/gi, '$1');
+            // Create function returning the group
+            const fn = new Function('THREE', `${stripped};\nreturn typeof createGeneratedItem==='function' ? createGeneratedItem(THREE) : null;`);
+            const group = fn(THREE);
+            if (group && group.isObject3D) return group;
+            console.warn('Generated function did not return a THREE.Object3D');
+            return null;
+        } catch (e) {
+            console.error('Evaluation error:', e);
+            return null;
+        }
+    }
+
+    async standardizeImage(dataUrl, width, height) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                // transparent background by default
+                ctx.clearRect(0, 0, width, height);
+
+                // Fit contain while preserving aspect
+                const scale = Math.min(width / img.width, height / img.height);
+                const drawW = img.width * scale;
+                const drawH = img.height * scale;
+                const dx = (width - drawW) / 2;
+                const dy = (height - drawH) / 2;
+                ctx.drawImage(img, dx, dy, drawW, drawH);
+
+                // Attempt chroma-key/flat background removal if background isn't transparent
+                try {
+                    const imageData = ctx.getImageData(0, 0, width, height);
+                    const d = imageData.data;
+
+                    // Sample four corners to detect solid background color
+                    const samples = [
+                        0,
+                        (width - 1) * 4,
+                        (width * (height - 1)) * 4,
+                        ((width * height) - 1) * 4,
+                    ].map(i => ({ r: d[i], g: d[i+1], b: d[i+2], a: d[i+3] }));
+
+                    // If all corners are similar, treat as background
+                    const similar = (a, b) => Math.abs(a - b) < 10;
+                    const allSimilar = samples.every(s => samples.every(t => similar(s.r,t.r)&&similar(s.g,t.g)&&similar(s.b,t.b)));
+
+                    if (allSimilar) {
+                        const key = samples[0];
+                        for (let i = 0; i < d.length; i += 4) {
+                            if (Math.abs(d[i]-key.r)<12 && Math.abs(d[i+1]-key.g)<12 && Math.abs(d[i+2]-key.b)<12) {
+                                d[i+3] = 0; // make transparent
+                            }
+                        }
+                        ctx.putImageData(imageData, 0, 0);
+                    }
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = () => resolve(dataUrl);
+            img.src = dataUrl;
+        });
+    }
+
+    prepareGeneratedGroupForGroundPlacement(group) {
+        try {
+            // Enable shadows on children
+            group.traverse(obj => {
+                if (obj.isMesh) {
+                    obj.castShadow = true;
+                    obj.receiveShadow = false;
+                }
+            });
+
+            const wrapper = new THREE.Group();
+            wrapper.add(group);
+
+            // Compute bounding box in current transform
+            group.updateMatrixWorld(true);
+            const box = new THREE.Box3().setFromObject(group);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            const minY = box.min.y;
+
+            // Recentre around origin (x,z) and put base at y=0 within wrapper
+            group.position.x -= center.x;
+            group.position.z -= center.z;
+            group.position.y -= minY;
+
+            return wrapper;
+        } catch (e) {
+            console.error('prepareGeneratedGroupForGroundPlacement error:', e);
+            // Fallback: place original group at slight offset
+            group.position.y = 0.02;
+            return group;
+        }
+    }
+
+    // Returns the hand that appears on the right side of the screen
+    getVisualRightHand() {
+        try {
+            if (!this.camera) return this.rightHand || this.leftHand || null;
+            if (!this.rightHand || !this.leftHand) return this.rightHand || this.leftHand || null;
+
+            const toScreenX = (obj) => {
+                const v = new THREE.Vector3();
+                obj.getWorldPosition(v);
+                v.project(this.camera);
+                return v.x; // -1 (left) to +1 (right)
+            };
+
+            const xRight = toScreenX(this.rightHand);
+            const xLeft = toScreenX(this.leftHand);
+            return (xRight >= xLeft) ? this.rightHand : this.leftHand;
+        } catch {
+            return this.rightHand || this.leftHand || null;
+        }
+    }
+
+    getVisualRightHandName() {
+        const v = this.getVisualRightHand();
+        return v === this.rightHand ? 'right' : 'left';
+    }
+
+    // Equip to the hand that appears on the screen's RIGHT side
+    equipScreenRightHandFromCode(code) {
+        const visualRight = this.getVisualRightHand();
+        const targetHand = (this.swapHandUI ? (visualRight === this.rightHand ? this.leftHand : this.rightHand) : visualRight);
+        return (targetHand === this.rightHand) ? this.equipRightHandFromCode(code) : this.equipLeftHandFromCode(code);
+    }
+
+    // Equip to the hand that appears on the screen's LEFT side
+    equipScreenLeftHandFromCode(code) {
+        const visualRight = this.getVisualRightHand();
+        const visualLeft = (visualRight === this.rightHand) ? this.leftHand : this.rightHand;
+        const targetHand = (this.swapHandUI ? (visualLeft === this.rightHand ? this.leftHand : this.rightHand) : visualLeft);
+        return (targetHand === this.rightHand) ? this.equipRightHandFromCode(code) : this.equipLeftHandFromCode(code);
+    }
+
+    equipLeftHandFromCode(code) {
+        try {
+            // Remove any existing equipped item
+            if (this.currentEquippedLeft && this.currentEquippedLeft.parent) {
+                this.currentEquippedLeft.parent.remove(this.currentEquippedLeft);
+            }
+
+            const generated = this.evaluateGeneratedCode(code);
+            if (!generated) return false;
+
+            // Normalize scale
+            const tmpBox = new THREE.Box3().setFromObject(generated);
+            const tmpSize = new THREE.Vector3();
+            tmpBox.getSize(tmpSize);
+            const longestDim = Math.max(tmpSize.x, tmpSize.y, tmpSize.z) || 1;
+            const targetMax = 1.0;
+            const scaleFactor = Math.min(0.35, targetMax / longestDim);
+            generated.scale.setScalar(scaleFactor);
+
+            // Attachment on left palm (mirror of right): -X is character's left, +Z forward
+            const attachment = new THREE.Group();
+            attachment.position.set(-0.08, 0.10, 0.02);
+            attachment.quaternion.copy(this.player.quaternion);
+            this.leftHand.add(attachment);
+
+            // Align +Y to +Z (forward)
+            const upLocal = new THREE.Vector3(0, 1, 0);
+            const forwardLocal = new THREE.Vector3(0, 0, 1);
+            const alignQuat = new THREE.Quaternion().setFromUnitVectors(upLocal, forwardLocal);
+            generated.setRotationFromQuaternion(alignQuat);
+
+            // Auto-flip if needed
+            const bbox = new THREE.Box3().setFromObject(generated);
+            const center = new THREE.Vector3();
+            bbox.getCenter(center);
+            const farForward = new THREE.Vector3(0, 0, 1).multiplyScalar(0.5).add(center);
+            const farBack = new THREE.Vector3(0, 0, -1).multiplyScalar(0.5).add(center);
+            const lenForward = Math.abs(farForward.z - center.z);
+            const lenBack = Math.abs(farBack.z - center.z);
+            if (lenBack > lenForward) {
+                generated.rotateOnAxis(forwardLocal, Math.PI);
+            }
+
+            // Roll 90° so blade edge isn't flat
+            generated.rotateOnAxis(forwardLocal, Math.PI / 2);
+
+            // Anchor: move sword so the middle of the HANDLE sits at the attachment origin
+            // Heuristic: after aligning +Y->+Z, the handle lies toward minZ.
+            const leftBox = new THREE.Box3().setFromObject(generated);
+            const leftCenter = new THREE.Vector3();
+            const leftSize = new THREE.Vector3();
+            leftBox.getCenter(leftCenter);
+            leftBox.getSize(leftSize);
+            const leftMinZ = leftBox.min.z;
+            // Choose a point near the handle middle: a bit forward from minZ (15% of length)
+            const handleAnchorZ = leftMinZ + leftSize.z * 0.15;
+            // Recenter X/Y to hand center, and Z so handle anchor is at 0
+            generated.position.x -= leftCenter.x;
+            generated.position.y -= leftCenter.y;
+            generated.position.z -= handleAnchorZ;
+
+            // Seat into palm: deeper inset so the handle firmly touches
+            generated.position.z -= 0.06;
+
+            attachment.add(generated);
+            this.currentEquippedLeft = attachment;
+            return true;
+        } catch (e) {
+            console.error('equipLeftHandFromCode failed:', e);
+            return false;
+        }
+    }
+
+    equipRightHandFromCode(code) {
+        try {
+            // Remove any existing equipped item
+            if (this.currentEquippedRight && this.currentEquippedRight.parent) {
+                this.currentEquippedRight.parent.remove(this.currentEquippedRight);
+            }
+
+            // Create the sword from code
+            const generated = this.evaluateGeneratedCode(code);
+            if (!generated) return false;
+
+            // Normalize scale to a reasonable sword size (~1.2 units for better visibility)
+            const tmpBox = new THREE.Box3().setFromObject(generated);
+            const tmpSize = new THREE.Vector3();
+            tmpBox.getSize(tmpSize);
+            const longestDim = Math.max(tmpSize.x, tmpSize.y, tmpSize.z) || 1;
+            const targetMax = 1.2; // increased for better sword visibility
+            const scaleFactor = Math.min(0.6, targetMax / longestDim); // increased max scale
+            generated.scale.setScalar(scaleFactor);
+
+            // Prepare attachment anchored to actual right hand
+            const attachment = new THREE.Group();
+            // Better offset for sword grip: slightly higher and more forward
+            attachment.position.set(0.06, 0.08, 0.08); // adjusted for better grip
+            // Follow the player's facing
+            attachment.quaternion.copy(this.player.quaternion);
+            this.rightHand.add(attachment);
+
+            // Simplified alignment: assume +Y is up, point blade forward (+Z)
+            const upLocal = new THREE.Vector3(0, 1, 0);
+            const forwardLocal = new THREE.Vector3(0, 0, 1);
+            const alignQuat = new THREE.Quaternion().setFromUnitVectors(upLocal, forwardLocal);
+            generated.setRotationFromQuaternion(alignQuat);
+
+            // Smart blade orientation: ensure blade points forward
+            const bbox = new THREE.Box3().setFromObject(generated);
+            const center = new THREE.Vector3();
+            bbox.getCenter(center);
+
+            // Check if the sword is pointing the wrong way by comparing front vs back extents
+            const swordLength = bbox.max.z - bbox.min.z;
+            const frontExtent = Math.abs(bbox.max.z - center.z);
+            const backExtent = Math.abs(bbox.min.z - center.z);
+
+            // If more sword mass is behind center, flip it
+            if (backExtent > frontExtent) {
+                generated.rotateOnAxis(forwardLocal, Math.PI);
+            }
+
+            // Position sword handle in palm: center the grip area
+            const swordBox = new THREE.Box3().setFromObject(generated);
+            const swordCenter = new THREE.Vector3();
+            const swordSize = new THREE.Vector3();
+            swordBox.getCenter(swordCenter);
+            swordBox.getSize(swordSize);
+
+            // For a sword, the handle is typically the bottom 25-30% when blade is up
+            const handleEndZ = swordBox.min.z + swordSize.z * 0.25;
+            const gripCenterZ = swordBox.min.z + swordSize.z * 0.125; // middle of handle
+
+            // Center horizontally and vertically, position handle properly
+            generated.position.x -= swordCenter.x;
+            generated.position.y -= swordCenter.y + 0.02; // slight upward adjustment
+            generated.position.z -= gripCenterZ;
+
+            attachment.add(generated);
+            this.currentEquippedRight = attachment;
+            return true;
+        } catch (e) {
+            console.error('equipRightHandFromCode failed:', e);
+            return false;
+        }
     }
 
     createWater() {
@@ -1017,6 +2170,18 @@ class Game3D {
         this.head.castShadow = true;
         this.player.add(this.head);
 
+        // Debug: nose marker to visualize forward-facing direction
+        const noseMarkerGeometry = new THREE.SphereGeometry(headHeight * 0.08, 8, 8);
+        const noseMarkerMaterial = new THREE.MeshLambertMaterial({ color: 0xff00ff });
+        const noseMarker = new THREE.Mesh(noseMarkerGeometry, noseMarkerMaterial);
+        // In player space, forward is +Z. Place the nose slightly in front of the head surface.
+        noseMarker.position.set(0, 0, (headHeight * 0.52));
+        noseMarker.castShadow = false;
+        noseMarker.receiveShadow = false;
+        noseMarker.userData = { type: 'debug_nose' };
+        this.head.add(noseMarker);
+        this.noseMarker = noseMarker;
+
         // === LEFT ARM HIERARCHY ===
         this.leftShoulder = new THREE.Group();
         this.leftShoulder.position.set(-0.26, torsoHeight * 0.75, 0);
@@ -1150,41 +2315,42 @@ class Game3D {
     }
 
     createWoodcuttingAxe() {
-        // Create axe handle (long thin cylinder)
-        const handleGeometry = new THREE.CylinderGeometry(0.02, 0.025, 0.8, 8);
+        // Create axe handle (tapered wooden shaft)
+        const handleGeometry = new THREE.CylinderGeometry(0.02, 0.025, 0.8, 8); // Tapered from bottom to top
         const handleMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown wood color
         this.axeHandle = new THREE.Mesh(handleGeometry, handleMaterial);
         this.axeHandle.castShadow = true;
 
-        // Create axe head (flat metal blade)
-        const headGeometry = new THREE.BoxGeometry(0.15, 0.08, 0.02);
-        const headMaterial = new THREE.MeshLambertMaterial({ color: 0xC0C0C0 }); // Silver metal color
+        // Create stone axe head (rectangular stone blade)
+        const headGeometry = new THREE.BoxGeometry(0.12, 0.15, 0.08); // Stone head dimensions
+        const headMaterial = new THREE.MeshLambertMaterial({ color: 0xC0C0C0 }); // Original color (silver/gray stone)
         this.axeHead = new THREE.Mesh(headGeometry, headMaterial);
         this.axeHead.castShadow = true;
 
-        // Position axe head at the end of the handle
-        this.axeHead.position.set(0, 0.4, 0.02); // Top of handle, slightly forward
+        // Position stone head at TOP of handle - handle emerges from bottom of stone head
+        this.axeHead.position.set(0, 0.4, 0); // At very top of handle
+        this.axeHead.rotation.set(0, Math.PI / 2, 0); // Rotate 90° around Y-axis to face forward (blade forward)
 
         // Create axe group and add parts
         this.axe = new THREE.Group();
         this.axe.add(this.axeHandle);
         this.axe.add(this.axeHead);
 
-        // RIGHT HAND - grip the WOODEN HANDLE near the base (not the blade)
-        // Handle geometry: cylinder from y=-0.4 to y=0.4 (centered)
-        // Head positioned at y=0.4 (top of handle)
-        // Player grips near y=-0.35 (base end) so the blade is far from the hand
-        this.axe.position.set(0.08, 0.35, 0.15); // RIGHT side, align base of handle to hand
+        // LEFT HAND - Natural woodcutting grip
+        // Position the axe to curve through the left forearm
+        // Handle extends outward and slightly upward, blade behind the user
+        this.axe.position.set(-0.08, 0.25, 0.12); // LEFT side, align with forearm curve
 
-        // Natural right-handed holding rotation
-        // X: slight downward angle, Y: swing to right side, Z: slight inward rotation
-        this.axe.rotation.set(-0.5, 0.3, -0.2); // Right-handed axe grip (by handle, base)
+        // More perpendicular shaft rotation - natural resting position
+        // X: minimal upward angle, Y: slight left swing, Z: natural forearm curve
+        this.axe.rotation.set(0.1, -0.3, 0.05); // More perpendicular to body plane
 
-        // Attach to RIGHT hand
-        console.log('Adding axe to RIGHT hand:', this.rightHand);
-        this.rightHand.add(this.axe);
+        // Attach to LEFT hand
+        console.log('Adding axe to LEFT hand:', this.leftHand);
+        this.leftHand.add(this.axe);
+        this.currentEquippedLeft = this.axe;
 
-        console.log('Woodcutting axe created and attached to RIGHT hand (gripping handle near base)');
+        console.log('Stone woodcutting axe created and attached to LEFT hand (natural woodcutting position)');
     }
 
     // Removed createHUD - no player stats modal
@@ -1402,11 +2568,17 @@ class Game3D {
         console.log('Right-click intersects:', intersects.length);
 
         if (intersects.length > 0) {
-            const clickedObject = intersects[0].object;
+            let clickedObject = intersects[0].object;
+
+            // Walk up parent chain to find meaningful userData.type
+            let target = clickedObject;
+            while (target && (!target.userData || (!target.userData.type && !target.userData.isGround)) && target.parent) {
+                target = target.parent;
+            }
 
             // Only interact if it's not the ground and has valid userData
-            if (clickedObject !== this.scene.children[0] && clickedObject.userData && !clickedObject.userData.isGround) {
-                this.handleObjectInteraction(clickedObject);
+            if (target && target !== this.scene.children[0] && target.userData && !target.userData.isGround) {
+                this.handleObjectInteraction(target);
             } else {
                 console.log('Clicked on ground or invalid object');
             }
@@ -1586,6 +2758,12 @@ class Game3D {
             this.talkToNPC(object);
         } else if (object.userData?.type === 'resource') {
             this.gatherResource(object);
+        } else if (object.userData?.type === 'workbench') {
+            this.openWorkbenchUI();
+        } else if (object.userData?.type === 'item_loader') {
+            this.openItemLoaderUI();
+        } else if (object.userData?.type === 'character_loader_button') {
+            this.openCharacterLoaderUI();
         } else {
             // Move player to clicked location
             if (object && object.position && typeof object.position.x === 'number' && !isNaN(object.position.x)) {
@@ -1685,8 +2863,11 @@ class Game3D {
 
     handleMovement(deltaTime = 16.67) {
         if (!this.targetPosition || !this.isMoving) {
-            this.isWalking = false;
-            this.resetPlayerPose();
+            if (this.isWalking) {
+                this.isWalking = false;
+                this.resetPlayerPose();
+                console.log('Stopped walking animation');
+            }
             return;
         }
 
@@ -1792,46 +2973,179 @@ class Game3D {
         const animationSpeed = (this.moveSpeed / stepLength) * (deltaTime / 16.67);
         this.walkCycle += animationSpeed;
 
+        // Detect character type and apply appropriate animation
+        this.animateCharacter(this.walkCycle);
+    }
+
+    animateCharacter(walkCycle) {
+        // Detect if this is a custom character by checking for specific properties
+        if (this.player && this.player.userData && this.player.userData.customCharacter) {
+            this.animateCustomCharacter(walkCycle);
+        } else {
+            this.animateHumanCharacter(walkCycle);
+        }
+    }
+
+    animateHumanCharacter(walkCycle) {
+        // Original human animation
+        if (!this.leftShoulder || !this.rightShoulder || !this.leftHip || !this.rightHip) return;
+
         // Simple arm swing - opposite to legs
-        const armSwing = Math.sin(this.walkCycle) * 0.3;
+        const armSwing = Math.sin(walkCycle) * 0.3;
         this.leftShoulder.rotation.x = armSwing;
         this.rightShoulder.rotation.x = -armSwing;
 
         // Simple leg swing - opposite to arms
-        const legSwing = Math.sin(this.walkCycle) * 0.4;
+        const legSwing = Math.sin(walkCycle) * 0.4;
         this.leftHip.rotation.x = -legSwing;
         this.rightHip.rotation.x = legSwing;
 
         // Very subtle knee bend
-        const kneeBend = Math.abs(Math.sin(this.walkCycle)) * 0.1;
-        this.leftKnee.rotation.x = kneeBend;
-        this.rightKnee.rotation.x = kneeBend;
+        const kneeBend = Math.abs(Math.sin(walkCycle)) * 0.1;
+        if (this.leftKnee) this.leftKnee.rotation.x = kneeBend;
+        if (this.rightKnee) this.rightKnee.rotation.x = kneeBend;
+    }
+
+    animateCustomCharacter(walkCycle) {
+        // Find limbs in the custom character
+        const character = this.player;
+        const limbs = this.findCharacterLimbs(character);
+
+        if (!limbs) return;
+
+        // Apply appropriate animation based on character type
+        if (limbs.isQuadrupedal) {
+            this.animateQuadrupedalCharacter(walkCycle, limbs);
+        } else {
+            this.animateBipedalCharacter(walkCycle, limbs);
+        }
+    }
+
+    findCharacterLimbs(character) {
+        const limbs = {
+            frontLeft: null,
+            frontRight: null,
+            backLeft: null,
+            backRight: null,
+            isQuadrupedal: false
+        };
+
+        // Search for limb components in the character
+        character.traverse((child) => {
+            if (child.userData && child.userData.componentName) {
+                const name = child.userData.componentName.toLowerCase();
+
+                // Detect quadrupedal vs bipedal
+                if (name.includes('arm') || name.includes('leg') || name.includes('hand') || name.includes('hoof') ||
+                    name.includes('foot') || name.includes('shoe')) {
+                    limbs.isQuadrupedal = true;
+                }
+
+                // Identify specific limbs (support multiple naming patterns)
+                if ((name.includes('left_upper_arm') || name.includes('left_arm') || name.includes('arm_l')) ||
+                    (name.includes('left_upper_leg') || name.includes('left_leg') || name.includes('leg_l')) ||
+                    (name.includes('left_hand') && !name.includes('right_hand')) ||
+                    (name.includes('hand_l') && !name.includes('hand_r'))) {
+                    limbs.frontLeft = child;
+                } else if ((name.includes('right_upper_arm') || name.includes('right_arm') || name.includes('arm_r')) ||
+                          (name.includes('right_upper_leg') || name.includes('right_leg') || name.includes('leg_r')) ||
+                          name.includes('right_hand') || name.includes('hand_r')) {
+                    limbs.frontRight = child;
+                } else if (name.includes('left_hoof') || name.includes('left_foot') || name.includes('left_shoe') ||
+                          (name.includes('hoof_l') || name.includes('foot_l'))) {
+                    limbs.backLeft = child;
+                } else if (name.includes('right_hoof') || name.includes('right_foot') || name.includes('right_shoe') ||
+                          name.includes('hoof_r') || name.includes('foot_r')) {
+                    limbs.backRight = child;
+                }
+            }
+        });
+
+        // If we found quadrupedal limbs, confirm it's quadrupedal
+        if (limbs.frontLeft && limbs.frontRight && limbs.backLeft && limbs.backRight) {
+            limbs.isQuadrupedal = true;
+        }
+
+        return (limbs.frontLeft || limbs.frontRight || limbs.backLeft || limbs.backRight) ? limbs : null;
+    }
+
+    animateQuadrupedalCharacter(walkCycle, limbs) {
+        // Animate quadrupedal character (horse) using detected limbs
+        const swingAmplitude = 0.4; // Limb swing amplitude
+
+        // Front legs swing (opposite to back legs)
+        const frontSwing = Math.sin(walkCycle) * swingAmplitude;
+
+        // Back legs swing (opposite to front legs)
+        const backSwing = Math.sin(walkCycle + Math.PI) * swingAmplitude;
+
+        // Apply rotations to detected limbs
+        if (limbs.frontLeft) {
+            limbs.frontLeft.rotation.x = frontSwing;
+        }
+        if (limbs.frontRight) {
+            limbs.frontRight.rotation.x = frontSwing;
+        }
+        if (limbs.backLeft) {
+            limbs.backLeft.rotation.x = backSwing;
+        }
+        if (limbs.backRight) {
+            limbs.backRight.rotation.x = backSwing;
+        }
+
+        // Very subtle body bob for realistic movement (much reduced)
+        if (this.player) {
+            this.player.position.y = Math.sin(walkCycle * 2) * 0.01; // Very subtle vertical movement
+        }
+    }
+
+    animateBipedalCharacter(walkCycle, limbs) {
+        // Generic bipedal animation for custom humanoid characters
+        const armSwing = Math.sin(walkCycle) * 0.3;
+        const legSwing = Math.sin(walkCycle + Math.PI) * 0.4;
+
+        // Apply arm swings if found
+        if (limbs.frontLeft) limbs.frontLeft.rotation.x = armSwing;
+        if (limbs.frontRight) limbs.frontRight.rotation.x = -armSwing;
+
+        // Apply leg swings if found
+        if (limbs.backLeft) limbs.backLeft.rotation.x = -legSwing;
+        if (limbs.backRight) limbs.backRight.rotation.x = legSwing;
     }
 
     resetPlayerPose() {
-        // Reset all joints to default position for standing still
+        // Check if this is a custom character
+        if (this.player && this.player.userData && this.player.userData.customCharacter) {
+            this.resetCustomCharacterPose();
+        } else {
+            this.resetHumanCharacterPose();
+        }
+    }
+
+    resetHumanCharacterPose() {
+        // Reset human joints to default position for standing still
 
         // Reset hip rotations
-        this.leftHip.rotation.x = 0;
-        this.rightHip.rotation.x = 0;
+        if (this.leftHip) this.leftHip.rotation.x = 0;
+        if (this.rightHip) this.rightHip.rotation.x = 0;
 
         // Reset knee bends
-        this.leftKnee.rotation.x = 0;
-        this.rightKnee.rotation.x = 0;
+        if (this.leftKnee) this.leftKnee.rotation.x = 0;
+        if (this.rightKnee) this.rightKnee.rotation.x = 0;
 
         // Reset shoulder rotations
-        this.leftShoulder.rotation.x = 0;
-        this.rightShoulder.rotation.x = 0;
+        if (this.leftShoulder) this.leftShoulder.rotation.x = 0;
+        if (this.rightShoulder) this.rightShoulder.rotation.x = 0;
 
         // Reset elbow bends
-        this.leftElbow.rotation.x = 0;
-        this.rightElbow.rotation.x = 0;
+        if (this.leftElbow) this.leftElbow.rotation.x = 0;
+        if (this.rightElbow) this.rightElbow.rotation.x = 0;
 
         // Reset body lean
-        this.torso.rotation.z = 0;
+        if (this.torso) this.torso.rotation.z = 0;
 
         // Reset head stabilization
-        this.head.rotation.z = 0;
+        if (this.head) this.head.rotation.z = 0;
 
         // Reset vertical position (feet on ground level)
         const totalHeight = 1.8;
@@ -1843,6 +3157,29 @@ class Game3D {
         const footOffset = 0.04;
         const torsoToFeetDistance = thighLength/2 + thighLength + calfLength/2 + calfLength + footOffset;
         this.player.position.y = torsoToFeetDistance; // Feet at Y=0
+    }
+
+    resetCustomCharacterPose() {
+        // Reset custom character limbs to default position
+        if (!this.player) return;
+
+        // Reset all limb rotations to 0
+        this.player.traverse((child) => {
+            if (child.isMesh && child.userData && child.userData.componentName) {
+                const name = child.userData.componentName.toLowerCase();
+
+                // Reset limb rotations if they're animation targets
+                if (name.includes('arm') || name.includes('leg') || name.includes('hand') ||
+                    name.includes('hoof') || name.includes('foot') || name.includes('shoe')) {
+                    child.rotation.x = 0;
+                    child.rotation.y = 0;
+                    child.rotation.z = 0;
+                }
+            }
+        });
+
+        // Keep the character at its proper ground level position
+        // (Don't reset Y position - let fixCharacterGroundPosition handle that)
     }
 
     updateCamera() {
@@ -2173,6 +3510,10 @@ class Game3D {
                 this.addObjectToMinimap(child.position, 'building');
             } else if (child.userData && child.userData.type === 'water') {
                 this.addObjectToMinimap(child.position, 'water');
+            } else if (child.userData && child.userData.type === 'workbench') {
+                this.addObjectToMinimap(child.position, 'workbench');
+            } else if (child.userData && child.userData.type === 'item_loader') {
+                this.addObjectToMinimap(child.position, 'loader');
             }
         });
     }
@@ -2203,6 +3544,12 @@ class Game3D {
             } else if (objectType === 'water') {
                 color = '#4169E1'; // Blue for water
                 size = 6; // Larger dots for water features
+            } else if (objectType === 'workbench') {
+                color = '#8B4513'; // Brown for workbench
+                size = 5; // Medium size for workbench
+            } else if (objectType === 'loader') {
+                color = '#3B82F6'; // Blue for loader
+                size = 5;
             }
 
             objectDot.style.cssText = `
