@@ -16,6 +16,8 @@ const PORT = process.env.PORT || 8787;
 
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
+// Serve static assets so imagePath works in the client (e.g., /assets/images/xxx.png)
+app.use('/assets', express.static(path.join(process.cwd(), 'assets')));
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
@@ -30,6 +32,30 @@ function saveBase64Image(dataUrl, outPath) {
   const buffer = Buffer.from(base64, 'base64');
   fs.writeFileSync(outPath, buffer);
   return { mimeType, size: buffer.length };
+}
+
+function saveDataUrlToImages(dataUrl, fileNamePrefix = 'wb-item') {
+  ensureDir(path.join(process.cwd(), 'assets', 'images'));
+  const ts = Date.now();
+  const outName = `${fileNamePrefix}-${ts}.png`;
+  const outPath = path.join(process.cwd(), 'assets', 'images', outName);
+  saveBase64Image(dataUrl, outPath);
+  return `assets/images/${outName}`;
+}
+
+function listImagesSortedByMtime() {
+  try {
+    const dir = path.join(process.cwd(), 'assets', 'images');
+    ensureDir(dir);
+    const files = fs.readdirSync(dir)
+      .filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
+      .map(f => ({ name: f, mtime: fs.statSync(path.join(dir, f)).mtimeMs }))
+      .sort((a, b) => b.mtime - a.mtime)
+      .map(f => `assets/images/${f.name}`);
+    return files;
+  } catch {
+    return [];
+  }
 }
 
 // Generate an item image from a prompt
@@ -81,22 +107,11 @@ ${forceGreenScreen ? 'If transparency is not possible, you MUST render on a SOLI
       }
     }
 
-    // Save image to disk if present
-    let savedPath = null;
-    if (firstImage) {
-      const ts = Date.now();
-      ensureDir(path.join(process.cwd(), 'assets', 'images'));
-      const outName = `${fileNamePrefix}-${ts}.${firstImage.ext}`;
-      const outPath = path.join(process.cwd(), 'assets', 'images', outName);
-      saveBase64Image(firstImage.dataUrl, outPath);
-      savedPath = `assets/images/${outName}`;
-    }
-
     return res.json({
       prompt,
       text,
       image: firstImage,
-      savedPath,
+      savedPath: null,
     });
   } catch (err) {
     console.error(err);
@@ -151,12 +166,8 @@ Units arbitrary but consistent. Center near origin. ${instructions || ''}`;
       }
     }
 
-    // Save analysis
-    ensureDir(path.join(process.cwd(), 'assets', 'analysis'));
-    const outPath = path.join(process.cwd(), 'assets', 'analysis', `analysis-${Date.now()}.json`);
-    fs.writeFileSync(outPath, JSON.stringify(json, null, 2), 'utf8');
-
-    return res.json({ analysis: json, savedPath: outPath.replace(process.cwd() + path.sep, '') });
+    // No filesystem persistence; return analysis blob
+    return res.json({ analysis: json, savedPath: null });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to analyze image', details: String(err) });
@@ -190,12 +201,8 @@ No external loaders, no fetch, no imports, no lights, no scenes. Keep polycount 
       code = `function createGeneratedItem(THREE){\n${code}\n}\n`;
     }
 
-    // Save code
-    ensureDir(path.join(process.cwd(), 'assets', 'models'));
-    const outPath = path.join(process.cwd(), 'assets', 'models', `model-${Date.now()}.js`);
-    fs.writeFileSync(outPath, code, 'utf8');
-
-    return res.json({ code, savedPath: outPath.replace(process.cwd() + path.sep, '') });
+    // No filesystem persistence
+    return res.json({ code, savedPath: null });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to generate Three.js code', details: String(err) });
@@ -238,11 +245,8 @@ app.post('/api/refine', async (req, res) => {
       code = `function createGeneratedItem(THREE){\n${code}\n}\n`;
     }
 
-    ensureDir(path.join(process.cwd(), 'assets', 'models'));
-    const outPath = path.join(process.cwd(), 'assets', 'models', `model-refined-${Date.now()}.js`);
-    fs.writeFileSync(outPath, code, 'utf8');
-
-    return res.json({ code, savedPath: outPath.replace(process.cwd() + path.sep, '') });
+    // No filesystem persistence for refine either
+    return res.json({ code, savedPath: null });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to refine code', details: String(err) });
@@ -283,11 +287,15 @@ app.get('/api/items', (req, res) => {
 
 // Save or update item
 app.post('/api/items', (req, res) => {
-  const { id, name, category, code, analysis, createdAt, updatedAt, meta } = req.body || {};
+  let { id, name, category, code, analysis, imageDataUrl, imagePath, createdAt, updatedAt, meta } = req.body || {};
   if (!name || !code) return res.status(400).json({ error: 'Missing name or code' });
   const lib = readLibrary();
   const now = new Date().toISOString();
-  const item = { id: id || `item_${Date.now()}`, name, category: category || 'misc', code, analysis: analysis || null, meta: meta || {}, createdAt: createdAt || now, updatedAt: now };
+  // Filesystem persistence disabled; rely on embedded base64
+  if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('assets/')) {
+    imagePath = null;
+  }
+  const item = { id: id || `item_${Date.now()}`, name, category: category || 'misc', code, analysis: analysis || null, imageDataUrl: imageDataUrl || null, imagePath: imagePath || null, meta: meta || {}, createdAt: createdAt || now, updatedAt: now };
 
   const idx = lib.items.findIndex(i => i.id === item.id);
   if (idx >= 0) lib.items[idx] = item; else lib.items.push(item);
@@ -310,6 +318,24 @@ app.delete('/api/items/:id', (req, res) => {
   lib.items = lib.items.filter(i => i.id !== req.params.id);
   writeLibrary(lib);
   res.json({ ok: true, deleted: before - lib.items.length });
+});
+
+// List available images in assets/images (sorted newest first)
+app.get('/api/images', (req, res) => {
+  // Deprecated: filesystem listing not reliable for your setup.
+  // Derive available image dataUrls directly from library for stability.
+  const lib = readLibrary();
+  const seen = new Set();
+  const images = [];
+  // Prefer embedded base64
+  for (const it of lib.items) {
+    if (it.imageDataUrl && !seen.has(it.imageDataUrl)) { seen.add(it.imageDataUrl); images.push(it.imageDataUrl); }
+  }
+  // Also expose any paths that exist in items (if present)
+  for (const it of lib.items) {
+    if (it.imagePath && !seen.has(it.imagePath)) { seen.add(it.imagePath); images.push(it.imagePath); }
+  }
+  res.json({ images });
 });
 
 

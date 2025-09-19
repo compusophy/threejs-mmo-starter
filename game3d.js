@@ -197,23 +197,7 @@ class Game3D {
         // Resize handler
         window.addEventListener('resize', () => this.onWindowResize());
 
-        // Printer input typing (active only when focused)
-        window.addEventListener('keydown', (e) => {
-            if (!this.printerStation || !this.printerStation.userData?.active) return;
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.generatePrinterImage();
-                return;
-            }
-            if (e.key === 'Backspace') {
-                e.preventDefault();
-                this.printerInputText = (this.printerInputText || '').slice(0, -1);
-                return;
-            }
-            if (e.key.length === 1) {
-                this.printerInputText = (this.printerInputText || '') + e.key;
-            }
-        });
+        // Printer removed – no global typing listeners
 
         // Remove global menu hotkeys per design – menus open via in-world objects only
     }
@@ -276,7 +260,6 @@ class Game3D {
         // this.createWater(); // REMOVED: Water disabled
         this.createWorkbench(); // Add workbench near center
         this.createItemLoader(); // Add item loader nearby
-        this.createPrinterStation(); // Add in-world image printer station
 
         // Add world boundaries (walls)
         this.createWorldBoundaries();
@@ -1015,100 +998,7 @@ class Game3D {
         console.log('Created workbench near center of map at:', workbenchPosition.x, workbenchPosition.z);
     }
 
-    // === PRINTER STATION (In-world image generator) ===
-    createPrinterStation() {
-        const pos = new THREE.Vector3(-3, 0, 3);
-        const printer = new THREE.Group();
-        printer.position.copy(pos);
-
-        // Base
-        const base = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 1.0), new THREE.MeshLambertMaterial({ color: 0x333333 }));
-        base.position.y = 0.1;
-        base.castShadow = true; base.receiveShadow = true;
-        printer.add(base);
-
-        // Body
-        const body = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.6, 0.8), new THREE.MeshLambertMaterial({ color: 0x555555 }));
-        body.position.y = 0.5;
-        body.castShadow = true; body.receiveShadow = true;
-        printer.add(body);
-
-        // Output tray
-        const tray = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.05, 0.5), new THREE.MeshLambertMaterial({ color: 0x444444 }));
-        tray.position.set(0, 0.25, 0.65);
-        tray.castShadow = true; tray.receiveShadow = true;
-        printer.add(tray);
-
-        // 3D Prompt panel (type here)
-        const panelGeo = new THREE.PlaneGeometry(0.9, 0.4);
-        const panelMat = new THREE.MeshLambertMaterial({ color: 0x111111, side: THREE.DoubleSide });
-        const promptPanel = new THREE.Mesh(panelGeo, panelMat);
-        promptPanel.position.set(0, 0.7, -0.38);
-        promptPanel.rotation.x = -Math.PI / 10;
-        printer.add(promptPanel);
-
-        // 3D text textures for system prompt and user prompt (rendered to canvas textures)
-        const makeTextPlane = (text, w = 512, h = 128) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#0b0b0b'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#8AB4F8'; ctx.font = 'bold 28px Arial';
-            ctx.fillText(text, 16, 40);
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.needsUpdate = true;
-            const m = new THREE.MeshLambertMaterial({ map: tex, transparent: true });
-            const g = new THREE.PlaneGeometry(0.9, 0.2);
-            const mesh = new THREE.Mesh(g, m);
-            mesh.userData._canvas = canvas;
-            mesh.userData._ctx = ctx;
-            mesh.userData._tex = tex;
-            return mesh;
-        };
-
-        // System prompt label (visible to user)
-        const sysPrompt = makeTextPlane('System: Generate a clean subject on neutral bg');
-        sysPrompt.position.set(0, 0.86, -0.35);
-        sysPrompt.rotation.x = -Math.PI / 10;
-        printer.add(sysPrompt);
-
-        // User prompt content (editable via typing)
-        const userPrompt = makeTextPlane('Type prompt here...');
-        userPrompt.position.set(0, 0.63, -0.35);
-        userPrompt.rotation.x = -Math.PI / 10;
-        printer.add(userPrompt);
-
-        // Output image plane placeholder
-        const outMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-        const outGeo = new THREE.PlaneGeometry(0.6, 0.6);
-        const outputImage = new THREE.Mesh(outGeo, outMat);
-        outputImage.position.set(0, 0.3, 0.9);
-        outputImage.rotation.x = -Math.PI / 2.2;
-        outputImage.visible = false;
-        printer.add(outputImage);
-
-        // Interaction state
-        printer.userData = {
-            type: 'printer_station',
-            active: false,
-            userPrompt,
-            sysPrompt,
-            outputImage
-        };
-
-        // Obstacle/clickable
-        const obstacle = new Obstacle(pos, {
-            type: 'printer',
-            collisionBounds: { width: 1.2, height: 1.0 },
-            blocksMovement: true,
-            blocksLineOfSight: false
-        });
-        this.obstacles.push(obstacle);
-
-        this.scene.add(printer);
-        this.printerStation = printer;
-        console.log('Printer station created at:', pos.x, pos.z);
-    }
+    // Printer removed
 
     createItemLoader() {
         // Place an item loader station ~20 units from workbench
@@ -1161,6 +1051,12 @@ class Game3D {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <div style="font-weight:bold;">Workbench - AI Asset Generator</div>
                 <button id="wb-close" style="background:#444; color:#fff; border:none; padding:4px 8px; cursor:pointer;">X</button>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
+                <div style="font-size:12px; opacity:0.9;">Load from Library</div>
+                <select id="wb-lib-select" style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #555; padding:6px;"></select>
+                <button id="wb-lib-refresh" style="background:#374151; color:#fff; border:none; padding:6px 10px; cursor:pointer;">Refresh</button>
+                <button id="wb-lib-load" style="background:#10b981; color:#111; border:none; padding:6px 10px; cursor:pointer;">Load</button>
             </div>
             <label style="font-size:12px;">Describe your item</label>
             <textarea id="wb-prompt" style="width:100%; height:70px; margin:4px 0; background:#2a2a2a; color:#fff; border:1px solid #555;">A low-poly medieval iron sword with wooden hilt, game-ready</textarea>
@@ -1607,11 +1503,100 @@ class Game3D {
     setupWorkbenchUIHandlers() {
         const $ = (id) => document.getElementById(id);
         const status = (msg) => { const s = $('wb-status'); if (s) s.textContent = msg; };
+        // Minimal ECS and blueprint registry (dev-only) - attached to this
+        if (!this.ecs) {
+            this.ecs = {
+                nextId: 1,
+                entities: new Map(),
+                add(components) {
+                    const id = this.nextId++;
+                    this.entities.set(id, { id, ...components });
+                    return id;
+                },
+                get(id) { return this.entities.get(id); },
+                remove(id) { this.entities.delete(id); }
+            };
+        }
+        if (!this.blueprints) {
+            this.blueprints = new Map();
+        }
+        // Simple blueprint loader: accepts a descriptor and returns entity id
+        this.loadBlueprint = (bp) => {
+            const group = new THREE.Group();
+            group.name = bp.displayName || bp.id || 'BlueprintObject';
+            // If code is provided, evaluate to create a group and attach
+            if (bp.code && typeof bp.code === 'string') {
+                const created = this.evaluateGeneratedCode(bp.code);
+                if (created) {
+                    const wrapper = this.prepareGeneratedGroupForGroundPlacement(created);
+                    wrapper.userData = { type: 'blueprint_object', blueprintId: bp.id };
+                    this.scene.add(wrapper);
+                    const eid = this.ecs.add({ transform: { ref: wrapper }, blueprint: { id: bp.id, version: bp.versionId || 'v1' } });
+                    wrapper.userData.entityId = eid;
+                    return eid;
+                }
+            }
+            // Fallback to empty group placement
+            group.userData = { type: 'blueprint_object', blueprintId: bp.id };
+            this.scene.add(group);
+            return this.ecs.add({ transform: { ref: group }, blueprint: { id: bp.id, version: bp.versionId || 'v1' } });
+        };
+
+        // Populate library dropdown
+        const populateLibDropdown = async () => {
+            try {
+                const sel = $('wb-lib-select'); if (!sel) return;
+                sel.innerHTML = '<option value="">Loading...</option>';
+                const resp = await fetch('http://localhost:8787/api/items');
+                const data = await resp.json();
+                const items = data?.items || [];
+                sel.innerHTML = '<option value="">Select asset...</option>' + items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+            } catch (e) { console.error('Lib load failed', e); }
+        };
+        setTimeout(populateLibDropdown, 0);
+
+        // Image selector removed (using embedded base64)
 
         $('wb-close').onclick = () => {
             const ui = $('workbench-ui');
             if (ui) ui.style.display = 'none';
         };
+
+        $('wb-lib-refresh').onclick = async () => {
+            const statusMsg = 'Refreshing library...';
+            try { status(statusMsg); } catch {}
+            try { await populateLibDropdown(); status('Library refreshed.'); } catch { status('Library refresh failed.'); }
+        };
+
+        $('wb-lib-load').onclick = async () => {
+            try {
+                const sel = $('wb-lib-select');
+                const id = sel?.value || '';
+                if (!id) { status('Select an asset first.'); return; }
+                status('Loading asset...');
+                const item = await this.fetchItemById(id);
+                console.log('Workbench LOAD item:', item);
+                if (!item?.code) { status('Selected asset has no code.'); return; }
+                $('wb-name').value = item.name || '';
+                $('wb-code-view').value = item.code;
+                this.latestWorkbenchAnalysis = item.analysis || null;
+                try { if (this.latestWorkbenchAnalysis) $('wb-analysis').value = JSON.stringify(this.latestWorkbenchAnalysis, null, 2); } catch {}
+                if (item.imageDataUrl) {
+                    const imgEl = $('wb-image'); if (imgEl) { imgEl.src = item.imageDataUrl; console.log('Workbench LOAD set image from imageDataUrl (length):', item.imageDataUrl.length); }
+                    this.latestImagePath = null;
+                } else if (item.imagePath) {
+                    const normalized = (item.imagePath.startsWith('http') || item.imagePath.startsWith('/')) ? item.imagePath : ('/' + item.imagePath);
+                    const imgEl = $('wb-image'); if (imgEl) { imgEl.src = normalized; console.log('Workbench LOAD set image from imagePath:', normalized); }
+                    this.latestImagePath = normalized;
+                }
+                status('Asset loaded into editor. Click Preview to place.');
+            } catch (e) {
+                console.error(e);
+                status('Load failed.');
+            }
+        };
+
+        // No image selector; image comes from embedded base64
 
         $('wb-generate').onclick = async () => {
             try {
@@ -1626,6 +1611,7 @@ class Game3D {
                     // Standardize to 1024x1024 PNG with transparent bg
                     const standardized = await this.standardizeImage(data.image.dataUrl, 1024, 1024);
                     $('wb-image').src = standardized;
+                    this.latestImagePath = data.savedPath || null;
                     status('Image generated.');
                 } else {
                     status('No image received.');
@@ -1647,6 +1633,7 @@ class Game3D {
                 });
                 const data = await resp.json();
                 this.latestWorkbenchAnalysis = data.analysis || data.raw || null;
+                this.latestAnalysisPath = data.savedPath || null;
                 try { $('wb-analysis').value = JSON.stringify(this.latestWorkbenchAnalysis, null, 2); } catch {}
                 status('Analysis complete.');
             } catch (e) {
@@ -1682,14 +1669,13 @@ class Game3D {
                 status('Placing preview in world...');
                 const code = $('wb-code-view').value;
                 if (!code) { status('No code to preview.'); return; }
-                const group = this.evaluateGeneratedCode(code);
-                if (!group) { status('Failed to evaluate code.'); return; }
-                // Prepare and place near workbench without ground clipping
-                const wrapper = this.prepareGeneratedGroupForGroundPlacement(group);
-                wrapper.position.set(6, 0.02, 3);
-                wrapper.userData = { type: 'generated_item' };
-                this.scene.add(wrapper);
-                this.latestGeneratedGroup = wrapper;
+                const bp = { id: `preview_${Date.now()}`, displayName: name || 'Preview', code, versionId: 'v1' };
+                const eid = this.loadBlueprint(bp);
+                const ent = this.ecs.get(eid);
+                if (ent?.transform?.ref) {
+                    ent.transform.ref.position.set(6, 0.02, 3);
+                    this.latestGeneratedGroup = ent.transform.ref;
+                }
                 status('Preview placed.');
             } catch (e) {
                 console.error(e);
@@ -1725,6 +1711,10 @@ class Game3D {
                 const code = document.getElementById('wb-code-view').value;
                 if (!code) { status('No code to save.'); return; }
                 const analysis = this.latestWorkbenchAnalysis || null;
+                // Always prefer embedded base64; stop relying on imagePath
+                const imgEl = document.getElementById('wb-image');
+                const imageDataUrl = (imgEl && imgEl.src && imgEl.src.startsWith('data:')) ? imgEl.src : null;
+                const imagePath = null;
 
                 // Auto-detect if this is a character (has body parts, limbs, etc.)
                 let category = 'weapon';
@@ -1777,10 +1767,15 @@ class Game3D {
 
                 const resp = await fetch('http://localhost:8787/api/items', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, code, analysis, category })
+                    body: JSON.stringify({ name, code, analysis, imagePath, imageDataUrl, category })
                 });
                 const data = await resp.json();
                 status(data?.ok ? `Saved to library as ${category}.` : 'Save failed.');
+                // Also register blueprint in-memory for immediate load
+                if (data?.ok && data?.item) {
+                    const bp = { id: data.item.id, displayName: name, versionId: 'v1', code };
+                    this.blueprints.set(bp.id, bp);
+                }
             } catch (e) { console.error(e); status('Save failed.'); }
         };
 
@@ -2662,8 +2657,6 @@ class Game3D {
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
-        console.log('Right-click intersects:', intersects.length);
-
         if (intersects.length > 0) {
             let clickedObject = intersects[0].object;
 
@@ -2846,9 +2839,7 @@ class Game3D {
     }
 
     handleObjectInteraction(object) {
-        console.log('Interacting with object:', object);
-        console.log('Object position:', object?.position);
-        console.log('Object userData:', object?.userData);
+        console.log('Interacting with object type:', object?.userData?.type);
 
         // Handle different object types
         if (object.userData?.type === 'npc') {
@@ -2863,7 +2854,7 @@ class Game3D {
             // Deprecated: character loader via button is disabled in favor of world stations
             return;
         } else if (object.userData?.type === 'printer_station') {
-            this.focusPrinterStation(object);
+            // Printer removed (ignore)
         } else {
             // Move player to clicked location
             if (object && object.position && typeof object.position.x === 'number' && !isNaN(object.position.x)) {
@@ -2920,37 +2911,7 @@ class Game3D {
         // Integrate with existing gathering system
     }
 
-    async generatePrinterImage() {
-        if (!this.printerStation) return;
-        const text = (this.printerInputText || '').trim();
-        if (!text) return;
-        try {
-            const sys = 'Generate a single centered subject on neutral background, high-contrast, no watermark.';
-            const resp = await fetch('http://localhost:8787/api/generate-image', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: `${sys}\nUser: ${text}`, fileNamePrefix: 'printer', forceGreenScreen: false })
-            });
-            const data = await resp.json();
-            const dataUrl = data?.image?.dataUrl;
-            if (!dataUrl) return;
-            const tex = await new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => {
-                    const texture = new THREE.Texture(img);
-                    texture.needsUpdate = true;
-                    resolve(texture);
-                };
-                img.src = dataUrl;
-            });
-            const plane = this.printerStation.userData.outputImage;
-            plane.material = new THREE.MeshLambertMaterial({ map: tex, side: THREE.DoubleSide });
-            plane.visible = true;
-            console.log('Printer output updated');
-        } catch (e) {
-            console.error('Printer image generation failed', e);
-        }
-    }
+    // Printer removed
 
     forceStopMovement() {
         console.log('=== FORCE STOP MOVEMENT ===');
@@ -2990,8 +2951,7 @@ class Game3D {
         // Update mouse interaction (cursor changes)
         this.updateMouseInteraction();
 
-        // Update printer station (blink cursor / input)
-        this.updatePrinterStation(deltaTime);
+        // Printer removed
     }
 
     // No keyboard movement functions - click to move only
@@ -3725,37 +3685,9 @@ class Game3D {
         this.renderer.render(this.scene, this.camera);
     }
 
-    focusPrinterStation(station) {
-        if (!station || !station.userData) return;
-        // Blur previous
-        if (this.printerStation && this.printerStation.userData) {
-            this.printerStation.userData.active = false;
-        }
-        this.printerStation = station;
-        this.printerStation.userData.active = true;
-        this.printerInputText = this.printerInputText || '';
-        console.log('Printer focused');
-    }
+    // Printer removed
 
-    updatePrinterStation(deltaTime = 16.67) {
-        if (!this.printerStation || !this.printerStation.userData?.active) return;
-        // Show caret blink on user prompt
-        this._printerBlinkTime = (this._printerBlinkTime || 0) + deltaTime;
-        const showCaret = Math.floor(this._printerBlinkTime / 500) % 2 === 0;
-        const userPromptMesh = this.printerStation.userData.userPrompt;
-        if (userPromptMesh?.userData?._ctx) {
-            const ctx = userPromptMesh.userData._ctx;
-            const canvas = userPromptMesh.userData._canvas;
-            ctx.fillStyle = '#0b0b0b';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#E5E7EB';
-            ctx.font = '24px Arial';
-            const text = (this.printerInputText || '');
-            const display = text + (showCaret ? '|' : '');
-            ctx.fillText(display, 16, 48);
-            userPromptMesh.userData._tex.needsUpdate = true;
-        }
-    }
+    // Printer removed
 
 }
 
